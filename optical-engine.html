@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoonPay Optical Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #0a0a0a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .control-panel {
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .slider {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .color-input {
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-primary {
+            background: rgba(144, 61, 217, 0.2);
+            border-color: #903DD9;
+        }
+        
+        .btn-primary:hover {
+            background: rgba(144, 61, 217, 0.3);
+        }
+        
+        .label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="glCanvas"></canvas>
+    
+    <!-- Control Panel -->
+    <div class="control-panel fixed top-4 right-4 w-80 p-6 rounded-lg max-h-[90vh] overflow-y-auto">
+        <h1 class="text-white text-xl font-bold mb-6">Optical Engine</h1>
+        
+        <!-- Brand Themes -->
+        <div class="mb-6">
+            <div class="label mb-3">Brand Themes</div>
+            <div class="grid grid-cols-2 gap-2">
+                <button class="btn btn-primary" onclick="app.applyTheme('consumer')">Consumer</button>
+                <button class="btn btn-primary" onclick="app.applyTheme('partner')">Partner</button>
+                <button class="btn btn-primary" onclick="app.applyTheme('stablecoins')">Stablecoins</button>
+            </div>
+        </div>
+        
+        <!-- Visual Presets -->
+        <div class="mb-6">
+            <div class="label mb-3">Visual Presets</div>
+            <div class="grid grid-cols-2 gap-2 mb-3">
+                <button class="btn" onclick="app.applyPreset('softAurora')">Soft Aurora</button>
+                <button class="btn" onclick="app.applyPreset('flowingGlass')">Flowing Glass</button>
+                <button class="btn" onclick="app.applyPreset('liquidOptics')">Liquid Optics</button>
+                <button class="btn" onclick="app.applyPreset('ambientDepth')">Ambient Depth</button>
+            </div>
+            <button class="btn btn-primary w-full" onclick="app.saveCustomPreset()">💾 Save Current Settings</button>
+        </div>
+        
+        <!-- Custom Presets -->
+        <div class="mb-6" id="customPresetsSection" style="display: none;">
+            <div class="label mb-3">Your Custom Presets</div>
+            <div id="customPresetsList" class="grid grid-cols-1 gap-2 mb-2"></div>
+            <input type="file" id="presetImport" accept=".json" style="display: none;" onchange="app.importPreset(event)">
+            <button class="btn w-full" onclick="document.getElementById('presetImport').click()">📥 Import Preset</button>
+        </div>
+        
+        <!-- Color Palette -->
+        <div class="mb-6">
+            <div class="label mb-3">Color Palette</div>
+            <div id="colorPalette" class="flex flex-wrap gap-2 mb-3"></div>
+            <div class="flex gap-2">
+                <button class="btn flex-1" onclick="app.addColor()">+ Add Color</button>
+                <button class="btn flex-1" onclick="app.shufflePalette()">Shuffle</button>
+            </div>
+        </div>
+        
+        <!-- Emitter Controls -->
+        <div class="mb-6">
+            <div class="label mb-3">Emitter Properties</div>
+            
+            <div class="mb-4">
+                <label class="label">Hardness</label>
+                <input type="range" class="slider" min="0" max="1" step="0.01" value="0.15" 
+                       oninput="app.updateUniform('hardness', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Diffusion</label>
+                <input type="range" class="slider" min="0" max="2" step="0.01" value="1.4" 
+                       oninput="app.updateUniform('diffusion', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Hotspot Glow</label>
+                <input type="range" class="slider" min="0" max="2" step="0.01" value="1.0" 
+                       oninput="app.updateUniform('hotspotGlow', parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <!-- Spatial Focus -->
+        <div class="mb-6">
+            <div class="label mb-3">Spatial Focus</div>
+            
+            <div class="mb-4">
+                <label class="label">Focus Intensity</label>
+                <input type="range" class="slider" min="0" max="1" step="0.01" value="0.3" 
+                       oninput="app.updateUniform('focusIntensity', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Focus Contrast</label>
+                <input type="range" class="slider" min="1" max="10" step="0.1" value="3.0" 
+                       oninput="app.updateUniform('focusContrast', parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <!-- Domain Warping -->
+        <div class="mb-6">
+            <div class="label mb-3">Domain Warping</div>
+            
+            <div class="mb-4">
+                <label class="label">Warp Strength</label>
+                <input type="range" class="slider" min="0" max="2" step="0.01" value="0.5" 
+                       oninput="app.updateUniform('warpStrength', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Warp Scale</label>
+                <input type="range" class="slider" min="0.1" max="5" step="0.1" value="1.5" 
+                       oninput="app.updateUniform('warpScale', parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <!-- Post-Processing Effects -->
+        <div class="mb-6">
+            <div class="label mb-3">Post-Processing</div>
+            
+            <div class="mb-4">
+                <label class="label">Grain Intensity</label>
+                <input type="range" class="slider" min="0" max="0.1" step="0.001" value="0.03" 
+                       oninput="app.updateUniform('grainIntensity', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Grain Size</label>
+                <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.0" 
+                       oninput="app.updateUniform('grainSize', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Chromatic Aberration</label>
+                <input type="range" class="slider" min="0" max="0.01" step="0.0001" value="0.003" 
+                       oninput="app.updateUniform('chromaticAberration', parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <!-- Animation -->
+        <div class="mb-6">
+            <div class="mb-4">
+                <label class="label">Animation Speed</label>
+                <input type="range" class="slider" min="0" max="2" step="0.01" value="0.3" 
+                       oninput="app.updateUniform('animSpeed', parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <!-- Export -->
+        <div>
+            <button class="btn btn-primary w-full" onclick="app.export4K()">Export 4K PNG</button>
+        </div>
+    </div>
+
+    <script>
+        // Simplex Noise implementation
+        const SimplexNoise = {
+            grad3: [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]],
+            p: [],
+            perm: [],
+            
+            init() {
+                for(let i = 0; i < 256; i++) this.p[i] = Math.floor(Math.random() * 256);
+                for(let i = 0; i < 512; i++) this.perm[i] = this.p[i & 255];
+            },
+            
+            dot(g, x, y) {
+                return g[0] * x + g[1] * y;
+            }
+        };
+        SimplexNoise.init();
+
+        const app = {
+            gl: null,
+            program: null,
+            canvas: null,
+            uniforms: {},
+            state: {
+                colors: ['#000000', '#0E0D38', '#903DD9', '#BBA1FF', '#D8C8FF', '#FFFFFF'],
+                hardness: 0.15,
+                diffusion: 1.4,
+                hotspotGlow: 1.0,
+                focusIntensity: 0.65,
+                focusContrast: 6.5,
+                warpStrength: 0.5,
+                warpScale: 1.0,
+                animSpeed: 0.3,
+                grainIntensity: 0.03,
+                grainSize: 1.0,
+                chromaticAberration: 0.003,
+                mouseX: 0.5,
+                mouseY: 0.5,
+                time: 0
+            },
+            
+            init() {
+                console.log('Initializing Optical Engine...');
+                this.canvas = document.getElementById('glCanvas');
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                
+                this.gl = this.canvas.getContext('webgl') || this.canvas.getContext('experimental-webgl');
+                if (!this.gl) {
+                    alert('WebGL not supported');
+                    return;
+                }
+                console.log('WebGL context created');
+                
+                this.setupShaders();
+                if (!this.program) {
+                    console.error('Failed to setup shaders');
+                    return;
+                }
+                
+                this.setupGeometry();
+                this.renderColorPalette();
+                this.setupMouseTracking();
+                this.loadCustomPresets();
+                
+                // Set initial viewport
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+                
+                console.log('Starting animation loop...');
+                this.animate();
+                
+                window.addEventListener('resize', () => this.resize());
+            },
+            
+            setupShaders() {
+                const vertexShaderSource = `
+                    attribute vec2 position;
+                    void main() {
+                        gl_Position = vec4(position, 0.0, 1.0);
+                    }
+                `;
+                
+                const fragmentShaderSource = `
+                    precision highp float;
+                    
+                    uniform vec2 resolution;
+                    uniform float time;
+                    uniform vec2 mouse;
+                    
+                    // Emitter properties
+                    uniform float hardness;
+                    uniform float diffusion;
+                    uniform float hotspotGlow;
+                    
+                    // Focus properties
+                    uniform float focusIntensity;
+                    uniform float focusContrast;
+                    
+                    // Warp properties
+                    uniform float warpStrength;
+                    uniform float warpScale;
+                    
+                    // Post-processing effects
+                    uniform float grainIntensity;
+                    uniform float grainSize;
+                    uniform float chromaticAberration;
+                    
+                    // Color palette (max 10 colors)
+                    uniform vec3 colors[10];
+                    uniform int colorCount;
+                    
+                    // Hash function for noise
+                    float hash(vec2 p) {
+                        p = fract(p * vec2(123.34, 456.21));
+                        p += dot(p, p + 45.32);
+                        return fract(p.x * p.y);
+                    }
+                    
+                    // 2D Simplex-like noise
+                    float noise(vec2 p) {
+                        vec2 i = floor(p);
+                        vec2 f = fract(p);
+                        f = f * f * (3.0 - 2.0 * f);
+                        
+                        float a = hash(i);
+                        float b = hash(i + vec2(1.0, 0.0));
+                        float c = hash(i + vec2(0.0, 1.0));
+                        float d = hash(i + vec2(1.0, 1.0));
+                        
+                        return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+                    }
+                    
+                    // Fractional Brownian Motion
+                    float fbm(vec2 p, int octaves) {
+                        float value = 0.0;
+                        float amplitude = 0.5;
+                        float frequency = 1.0;
+                        
+                        for(int i = 0; i < 8; i++) {
+                            if(i >= octaves) break;
+                            value += amplitude * noise(p * frequency);
+                            frequency *= 2.0;
+                            amplitude *= 0.5;
+                        }
+                        return value;
+                    }
+                    
+                    // Voronoi/Cellular noise
+                    float voronoi(vec2 p) {
+                        vec2 i = floor(p);
+                        vec2 f = fract(p);
+                        
+                        float minDist = 1.0;
+                        for(int y = -1; y <= 1; y++) {
+                            for(int x = -1; x <= 1; x++) {
+                                vec2 neighbor = vec2(float(x), float(y));
+                                vec2 point = hash(i + neighbor) * vec2(1.0);
+                                vec2 diff = neighbor + point - f;
+                                float dist = length(diff);
+                                minDist = min(minDist, dist);
+                            }
+                        }
+                        return minDist;
+                    }
+                    
+                    // Iterative domain distortion for organic, flowing curves
+                    vec2 iterativeWarp(vec2 p, float strength, float scale, float timeOffset) {
+                        vec2 uv = p * scale;
+                        
+                        // Iterative feedback loop creates smooth, flowing patterns
+                        for(float i = 1.0; i < 8.0; i++){
+                            uv.x += (strength / i) * sin(i * 2.5 * uv.y + time * 0.5 + timeOffset);
+                            uv.y += (strength / i) * cos(i * 1.5 * uv.x + time * 0.5 + timeOffset);
+                        }
+                        
+                        return uv;
+                    }
+                    
+                    // Generate flow-based highlights for sharp, luminous edges
+                    float flowHighlight(vec2 p, float strength, float scale) {
+                        vec2 uv = p * scale;
+                        
+                        for(float i = 1.0; i < 6.0; i++){
+                            uv.x += (strength / i) * sin(i * 2.5 * uv.y + time * 0.3);
+                            uv.y += (strength / i) * cos(i * 1.5 * uv.x + time * 0.3);
+                        }
+                        
+                        // Create subtle flowing bands of light
+                        float bands = abs(sin(time * 0.2 - uv.y - uv.x));
+                        float highlight = 0.1 / (bands + 0.2);
+                        return clamp(highlight, 0.0, 1.0);
+                    }
+                    
+                    // Calculate light emitter with smooth volumetric falloff
+                    float calcEmitter(vec2 p, vec2 center, float hardness, float diffusion) {
+                        float dist = length(p - center);
+                        
+                        // Smooth volumetric falloff
+                        float edge = exp(-dist * (1.0 / diffusion));
+                        
+                        // Apply hardness with smooth curve
+                        float curve = 1.0 + hardness * 5.0;
+                        edge = pow(edge, curve);
+                        
+                        // Smooth the final result for silky gradients
+                        edge = smoothstep(0.0, 1.0, edge);
+                        
+                        return edge;
+                    }
+                    
+                    // Subtle tonemapping that preserves color accuracy
+                    vec3 acesToneMapping(vec3 color) {
+                        // Gentle S-curve for contrast without oversaturation
+                        vec3 mapped = color / (color + vec3(0.3));
+                        
+                        // Recalibrate to reach pure white at 1.0
+                        mapped = mapped * 1.3;
+                        
+                        return clamp(mapped, 0.0, 1.0);
+                    }
+                    
+                    // Blue noise dithering (anti-banding)
+                    float dither(vec2 p) {
+                        return hash(p + time * 0.001) / 255.0;
+                    }
+                    
+                    // High-quality pseudo-random hash (industry standard)
+                    float random(vec2 st) {
+                        return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+                    }
+                    
+                    // Improved hash with better distribution
+                    float hash12(vec2 p) {
+                        vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+                        p3 += dot(p3, p3.yzx + 33.33);
+                        return fract((p3.x + p3.y) * p3.z);
+                    }
+                    
+                    // Gaussian noise using Box-Muller transform
+                    float filmGrain(vec2 p, float size) {
+                        // Scale coordinates based on grain size
+                        // Larger size = coarser grain (fewer particles)
+                        // Smaller size = finer grain (more particles)
+                        vec2 scaledP = p * (1234.5678 / size);
+                        
+                        // Generate two independent uniform random numbers [0,1]
+                        float u1 = hash12(scaledP);
+                        float u2 = hash12(scaledP + vec2(123.456, 789.012));
+                        
+                        // Ensure u1 is never zero to avoid log(0)
+                        u1 = max(u1, 0.0001);
+                        
+                        // Box-Muller transform
+                        const float PI = 3.14159265359;
+                        float radius = sqrt(-2.0 * log(u1));
+                        float theta = 2.0 * PI * u2;
+                        float gaussian = radius * cos(theta);
+                        
+                        // Clamp extreme values and scale
+                        return clamp(gaussian, -3.0, 3.0) * 0.5;
+                    }
+                    
+                    // Map light intensity to color using the color ramp
+                    vec3 lightToColor(float totalLight) {
+                        vec3 finalColor = colors[0];
+                        float clampedLight = clamp(totalLight, 0.0, 1.0);
+                        
+                        // Handle each colorCount case with only constant indices
+                        if(colorCount == 2) {
+                            finalColor = mix(colors[0], colors[1], clampedLight);
+                        }
+                        else if(colorCount == 3) {
+                            float t = clampedLight * 2.0;
+                            if(t < 1.0) finalColor = mix(colors[0], colors[1], t);
+                            else finalColor = mix(colors[1], colors[2], t - 1.0);
+                        }
+                        else if(colorCount == 4) {
+                            float t = clampedLight * 3.0;
+                            if(t < 1.0) finalColor = mix(colors[0], colors[1], t);
+                            else if(t < 2.0) finalColor = mix(colors[1], colors[2], t - 1.0);
+                            else finalColor = mix(colors[2], colors[3], t - 2.0);
+                        }
+                        else if(colorCount == 5) {
+                            float t = clampedLight * 4.0;
+                            if(t < 1.0) finalColor = mix(colors[0], colors[1], t);
+                            else if(t < 2.0) finalColor = mix(colors[1], colors[2], t - 1.0);
+                            else if(t < 3.0) finalColor = mix(colors[2], colors[3], t - 2.0);
+                            else finalColor = mix(colors[3], colors[4], t - 3.0);
+                        }
+                        else if(colorCount == 6) {
+                            float t = clampedLight * 5.0;
+                            if(t < 1.0) finalColor = mix(colors[0], colors[1], t);
+                            else if(t < 2.0) finalColor = mix(colors[1], colors[2], t - 1.0);
+                            else if(t < 3.0) finalColor = mix(colors[2], colors[3], t - 2.0);
+                            else if(t < 4.0) finalColor = mix(colors[3], colors[4], t - 3.0);
+                            else finalColor = mix(colors[4], colors[5], t - 4.0);
+                        }
+                        else if(colorCount == 7) {
+                            float t = clampedLight * 6.0;
+                            if(t < 1.0) finalColor = mix(colors[0], colors[1], t);
+                            else if(t < 2.0) finalColor = mix(colors[1], colors[2], t - 1.0);
+                            else if(t < 3.0) finalColor = mix(colors[2], colors[3], t - 2.0);
+                            else if(t < 4.0) finalColor = mix(colors[3], colors[4], t - 3.0);
+                            else if(t < 5.0) finalColor = mix(colors[4], colors[5], t - 4.0);
+                            else finalColor = mix(colors[5], colors[6], t - 5.0);
+                        }
+                        else if(colorCount == 8) {
+                            float t = clampedLight * 7.0;
+                            if(t < 1.0) finalColor = mix(colors[0], colors[1], t);
+                            else if(t < 2.0) finalColor = mix(colors[1], colors[2], t - 1.0);
+                            else if(t < 3.0) finalColor = mix(colors[2], colors[3], t - 2.0);
+                            else if(t < 4.0) finalColor = mix(colors[3], colors[4], t - 3.0);
+                            else if(t < 5.0) finalColor = mix(colors[4], colors[5], t - 4.0);
+                            else if(t < 6.0) finalColor = mix(colors[5], colors[6], t - 5.0);
+                            else finalColor = mix(colors[6], colors[7], t - 6.0);
+                        }
+                        else if(colorCount == 9) {
+                            float t = clampedLight * 8.0;
+                            if(t < 1.0) finalColor = mix(colors[0], colors[1], t);
+                            else if(t < 2.0) finalColor = mix(colors[1], colors[2], t - 1.0);
+                            else if(t < 3.0) finalColor = mix(colors[2], colors[3], t - 2.0);
+                            else if(t < 4.0) finalColor = mix(colors[3], colors[4], t - 3.0);
+                            else if(t < 5.0) finalColor = mix(colors[4], colors[5], t - 4.0);
+                            else if(t < 6.0) finalColor = mix(colors[5], colors[6], t - 5.0);
+                            else if(t < 7.0) finalColor = mix(colors[6], colors[7], t - 6.0);
+                            else finalColor = mix(colors[7], colors[8], t - 7.0);
+                        }
+                        else if(colorCount >= 10) {
+                            float t = clampedLight * 9.0;
+                            if(t < 1.0) finalColor = mix(colors[0], colors[1], t);
+                            else if(t < 2.0) finalColor = mix(colors[1], colors[2], t - 1.0);
+                            else if(t < 3.0) finalColor = mix(colors[2], colors[3], t - 2.0);
+                            else if(t < 4.0) finalColor = mix(colors[3], colors[4], t - 3.0);
+                            else if(t < 5.0) finalColor = mix(colors[4], colors[5], t - 4.0);
+                            else if(t < 6.0) finalColor = mix(colors[5], colors[6], t - 5.0);
+                            else if(t < 7.0) finalColor = mix(colors[6], colors[7], t - 6.0);
+                            else if(t < 8.0) finalColor = mix(colors[7], colors[8], t - 7.0);
+                            else finalColor = mix(colors[8], colors[9], t - 8.0);
+                        }
+                        
+                        // Handle over-glow
+                        if(totalLight > 1.0) {
+                            float overGlow = (totalLight - 1.0) * 0.5;
+                            finalColor += vec3(overGlow);
+                        }
+                        
+                        return finalColor;
+                    }
+                    
+                    // Calculate light intensity at a position (for chromatic aberration)
+                    float calculateLightIntensity(vec2 p, vec2 offset) {
+                        vec2 samplePos = p + offset;
+                        
+                        // Apply iterative domain distortion
+                        vec2 wp = iterativeWarp(samplePos, warpStrength, warpScale, 0.0);
+                        
+                        // Generate flow-based highlights
+                        float flowGlow = flowHighlight(samplePos, warpStrength * 0.8, warpScale);
+                        
+                        // Calculate focus map
+                        float focusMap = fbm(samplePos * 1.2 + time * 0.03, 2);
+                        focusMap = smoothstep(0.2, 0.8, focusMap);
+                        focusMap = pow(focusMap, focusContrast);
+                        focusMap = mix(0.15, 1.0, focusMap * focusIntensity + (1.0 - focusIntensity));
+                        
+                        // Create focus modulation
+                        float sharpness = mix(0.05, 1.0, focusMap);
+                        float blur = mix(3.0, 0.3, focusMap);
+                        float modHardness = hardness * sharpness;
+                        float modDiffusion = diffusion * blur;
+                        
+                        // Four light emitters
+                        vec2 emitter1Pos = vec2(cos(time * 0.25) * 0.35, sin(time * 0.25) * 0.35);
+                        vec2 emitter2Pos = vec2(cos(time * 0.18 + 3.14159) * 0.45, sin(time * 0.18 + 3.14159) * 0.25);
+                        vec2 emitter3Pos = vec2(cos(time * 0.22 + 1.57) * 0.25, sin(time * 0.22 + 1.57) * 0.45);
+                        vec2 emitter4Pos = mouse * 2.0 - 1.0;
+                        
+                        // Calculate emitters
+                        float light1 = calcEmitter(wp, emitter1Pos, modHardness * 0.8, modDiffusion * 1.2);
+                        float light2 = calcEmitter(wp, emitter2Pos, modHardness * 1.2, modDiffusion * 0.9);
+                        float light3 = calcEmitter(wp, emitter3Pos, modHardness, modDiffusion * 1.5);
+                        float light4 = calcEmitter(wp, emitter4Pos, modHardness * 1.5, modDiffusion * 0.7);
+                        
+                        // Layer lights with reduced intensity
+                        float totalLight = 0.0;
+                        totalLight += light1 * 0.6;
+                        totalLight += light2 * 0.55;
+                        totalLight += light3 * 0.5;
+                        totalLight += light4 * 0.55;
+                        
+                        // Add ambient and flow highlights (reduced)
+                        totalLight += fbm(wp * 0.8 + time * 0.02, 2) * 0.02;
+                        totalLight += flowGlow * 0.08;
+                        totalLight *= hotspotGlow;
+                        totalLight = smoothstep(0.0, 1.0, totalLight * 0.75);
+                        
+                        return totalLight;
+                    }
+                    
+                    void main() {
+                        vec2 uv = gl_FragCoord.xy / resolution.xy;
+                        vec2 p = (gl_FragCoord.xy * 2.0 - resolution.xy) / min(resolution.x, resolution.y);
+                        
+                        // Calculate radial distance from center for chromatic aberration
+                        float distFromCenter = length(p);
+                        vec2 direction = normalize(p);
+                        
+                        // Chromatic aberration: offset RGB channels radially
+                        // More pronounced at edges, subtle in center
+                        float caStrength = chromaticAberration * distFromCenter;
+                        vec2 offsetR = direction * caStrength * 1.0;   // Red shifts outward
+                        vec2 offsetG = vec2(0.0);                       // Green stays centered
+                        vec2 offsetB = direction * caStrength * -1.0;  // Blue shifts inward
+                        
+                        // Calculate light intensity for each channel with offset
+                        float lightR = calculateLightIntensity(p, offsetR);
+                        float lightG = calculateLightIntensity(p, offsetG);
+                        float lightB = calculateLightIntensity(p, offsetB);
+                        
+                        // Map each channel to color and extract individual components
+                        vec3 colorR = lightToColor(lightR);
+                        vec3 colorG = lightToColor(lightG);
+                        vec3 colorB = lightToColor(lightB);
+                        
+                        // Combine RGB channels with chromatic aberration
+                        vec3 finalColor = vec3(colorR.r, colorG.g, colorB.b);
+                        
+                        // Apply ACES tonemapping
+                        finalColor = acesToneMapping(finalColor);
+                        
+                        // Add film grain for photographic texture
+                        float grain = filmGrain(gl_FragCoord.xy, grainSize) * grainIntensity;
+                        finalColor += vec3(grain);
+                        
+                        // Apply anti-banding dither
+                        finalColor += dither(gl_FragCoord.xy) - 0.5/255.0;
+                        
+                        // Clamp final output
+                        finalColor = clamp(finalColor, 0.0, 1.0);
+                        
+                        gl_FragColor = vec4(finalColor, 1.0);
+                    }
+                `;
+                
+                const vertexShader = this.compileShader(vertexShaderSource, this.gl.VERTEX_SHADER);
+                const fragmentShader = this.compileShader(fragmentShaderSource, this.gl.FRAGMENT_SHADER);
+                
+                if (!vertexShader || !fragmentShader) {
+                    console.error('Failed to compile shaders');
+                    return;
+                }
+                
+                this.program = this.gl.createProgram();
+                this.gl.attachShader(this.program, vertexShader);
+                this.gl.attachShader(this.program, fragmentShader);
+                this.gl.linkProgram(this.program);
+                
+                if (!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)) {
+                    console.error('Program link error:', this.gl.getProgramInfoLog(this.program));
+                    alert('Shader link error - check console');
+                    return;
+                }
+                
+                this.gl.useProgram(this.program);
+                console.log('Shaders compiled and linked successfully');
+                
+                // Get uniform locations
+                this.uniforms = {
+                    resolution: this.gl.getUniformLocation(this.program, 'resolution'),
+                    time: this.gl.getUniformLocation(this.program, 'time'),
+                    mouse: this.gl.getUniformLocation(this.program, 'mouse'),
+                    hardness: this.gl.getUniformLocation(this.program, 'hardness'),
+                    diffusion: this.gl.getUniformLocation(this.program, 'diffusion'),
+                    hotspotGlow: this.gl.getUniformLocation(this.program, 'hotspotGlow'),
+                    focusIntensity: this.gl.getUniformLocation(this.program, 'focusIntensity'),
+                    focusContrast: this.gl.getUniformLocation(this.program, 'focusContrast'),
+                    warpStrength: this.gl.getUniformLocation(this.program, 'warpStrength'),
+                    warpScale: this.gl.getUniformLocation(this.program, 'warpScale'),
+                    grainIntensity: this.gl.getUniformLocation(this.program, 'grainIntensity'),
+                    grainSize: this.gl.getUniformLocation(this.program, 'grainSize'),
+                    chromaticAberration: this.gl.getUniformLocation(this.program, 'chromaticAberration'),
+                    colorCount: this.gl.getUniformLocation(this.program, 'colorCount')
+                };
+                
+                // Get color uniform locations
+                for(let i = 0; i < 10; i++) {
+                    this.uniforms[`color${i}`] = this.gl.getUniformLocation(this.program, `colors[${i}]`);
+                }
+            },
+            
+            compileShader(source, type) {
+                const shader = this.gl.createShader(type);
+                this.gl.shaderSource(shader, source);
+                this.gl.compileShader(shader);
+                
+                if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
+                    const info = this.gl.getShaderInfoLog(shader);
+                    console.error('Shader compile error:', info);
+                    console.error('Shader type:', type === this.gl.VERTEX_SHADER ? 'VERTEX' : 'FRAGMENT');
+                    alert('Shader compile error: ' + info);
+                    this.gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
+            },
+            
+            setupGeometry() {
+                const vertices = new Float32Array([
+                    -1, -1,
+                     1, -1,
+                    -1,  1,
+                     1,  1
+                ]);
+                
+                const buffer = this.gl.createBuffer();
+                this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+                this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+                
+                const position = this.gl.getAttribLocation(this.program, 'position');
+                this.gl.enableVertexAttribArray(position);
+                this.gl.vertexAttribPointer(position, 2, this.gl.FLOAT, false, 0, 0);
+            },
+            
+            setupMouseTracking() {
+                this.canvas.addEventListener('mousemove', (e) => {
+                    this.state.mouseX = e.clientX / window.innerWidth;
+                    this.state.mouseY = 1.0 - (e.clientY / window.innerHeight);
+                });
+            },
+            
+            updateUniforms() {
+                this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
+                this.gl.uniform1f(this.uniforms.time, this.state.time);
+                this.gl.uniform2f(this.uniforms.mouse, this.state.mouseX, this.state.mouseY);
+                this.gl.uniform1f(this.uniforms.hardness, this.state.hardness);
+                this.gl.uniform1f(this.uniforms.diffusion, this.state.diffusion);
+                this.gl.uniform1f(this.uniforms.hotspotGlow, this.state.hotspotGlow);
+                this.gl.uniform1f(this.uniforms.focusIntensity, this.state.focusIntensity);
+                this.gl.uniform1f(this.uniforms.focusContrast, this.state.focusContrast);
+                this.gl.uniform1f(this.uniforms.warpStrength, this.state.warpStrength);
+                this.gl.uniform1f(this.uniforms.warpScale, this.state.warpScale);
+                this.gl.uniform1f(this.uniforms.grainIntensity, this.state.grainIntensity);
+                this.gl.uniform1f(this.uniforms.grainSize, this.state.grainSize);
+                this.gl.uniform1f(this.uniforms.chromaticAberration, this.state.chromaticAberration);
+                this.gl.uniform1i(this.uniforms.colorCount, this.state.colors.length);
+                
+                // Update color uniforms
+                for(let i = 0; i < 10; i++) {
+                    if(i < this.state.colors.length) {
+                        const rgb = this.hexToRgb(this.state.colors[i]);
+                        this.gl.uniform3f(this.uniforms[`color${i}`], rgb.r, rgb.g, rgb.b);
+                    } else {
+                        this.gl.uniform3f(this.uniforms[`color${i}`], 0, 0, 0);
+                    }
+                }
+            },
+            
+            animate() {
+                this.state.time += this.state.animSpeed * 0.016;
+                this.updateUniforms();
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+                requestAnimationFrame(() => this.animate());
+            },
+            
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+            },
+            
+            updateUniform(name, value) {
+                this.state[name] = value;
+            },
+            
+            hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16) / 255,
+                    g: parseInt(result[2], 16) / 255,
+                    b: parseInt(result[3], 16) / 255
+                } : {r: 0, g: 0, b: 0};
+            },
+            
+            renderColorPalette() {
+                const container = document.getElementById('colorPalette');
+                container.innerHTML = '';
+                
+                this.state.colors.forEach((color, index) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'flex items-center gap-2';
+                    
+                    const input = document.createElement('input');
+                    input.type = 'color';
+                    input.value = color;
+                    input.className = 'color-input';
+                    input.onchange = (e) => {
+                        this.state.colors[index] = e.target.value;
+                    };
+                    
+                    wrapper.appendChild(input);
+                    
+                    if(this.state.colors.length > 2) {
+                        const removeBtn = document.createElement('button');
+                        removeBtn.textContent = '×';
+                        removeBtn.className = 'btn';
+                        removeBtn.style.padding = '4px 8px';
+                        removeBtn.onclick = () => this.removeColor(index);
+                        wrapper.appendChild(removeBtn);
+                    }
+                    
+                    container.appendChild(wrapper);
+                });
+            },
+            
+            addColor() {
+                if(this.state.colors.length < 10) {
+                    this.state.colors.push('#FFFFFF');
+                    this.renderColorPalette();
+                }
+            },
+            
+            removeColor(index) {
+                if(this.state.colors.length > 2) {
+                    this.state.colors.splice(index, 1);
+                    this.renderColorPalette();
+                }
+            },
+            
+            shufflePalette() {
+                const first = this.state.colors[0];
+                const rest = this.state.colors.slice(1);
+                for(let i = rest.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [rest[i], rest[j]] = [rest[j], rest[i]];
+                }
+                this.state.colors = [first, ...rest];
+                this.renderColorPalette();
+            },
+            
+            applyTheme(theme) {
+                const themes = {
+                    consumer: ['#000000', '#0E0D38', '#903DD9', '#BBA1FF', '#D8C8FF', '#FFFFFF'],
+                    partner: ['#000000', '#0E0D38', '#4464D9', '#9490FF', '#D8C8FF', '#FFFFFF'],
+                    stablecoins: ['#000000', '#00191A', '#089C50', '#47C4A9', '#AEE6E8', '#FFFFFF']
+                };
+                this.state.colors = themes[theme];
+                this.renderColorPalette();
+            },
+            
+            applyPreset(preset) {
+                const presets = {
+                    softAurora: {
+                        // Ethereal & dreamy - minimal warp, soft diffusion
+                        hardness: 0.05,
+                        diffusion: 1.6,
+                        hotspotGlow: 0.85,
+                        warpStrength: 0.3,
+                        warpScale: 0.9,
+                        focusIntensity: 0.15,
+                        focusContrast: 2.5,
+                        grainIntensity: 0.025,
+                        grainSize: 0.8,
+                        chromaticAberration: 0.002
+                    },
+                    flowingGlass: {
+                        // Balanced & iridescent - smooth translucent flow
+                        hardness: 0.2,
+                        diffusion: 1.3,
+                        hotspotGlow: 1.0,
+                        warpStrength: 0.6,
+                        warpScale: 1.1,
+                        focusIntensity: 0.5,
+                        focusContrast: 5.0,
+                        grainIntensity: 0.03,
+                        grainSize: 1.0,
+                        chromaticAberration: 0.004
+                    },
+                    liquidOptics: {
+                        // Dynamic & layered - high contrast, dramatic flow
+                        hardness: 0.35,
+                        diffusion: 1.0,
+                        hotspotGlow: 1.2,
+                        warpStrength: 0.8,
+                        warpScale: 0.8,
+                        focusIntensity: 0.75,
+                        focusContrast: 7.5,
+                        grainIntensity: 0.035,
+                        grainSize: 1.2,
+                        chromaticAberration: 0.005
+                    },
+                    ambientDepth: {
+                        // Atmospheric & volumetric - extreme depth of field
+                        hardness: 0.08,
+                        diffusion: 1.5,
+                        hotspotGlow: 0.9,
+                        warpStrength: 0.4,
+                        warpScale: 1.3,
+                        focusIntensity: 0.85,
+                        focusContrast: 9.0,
+                        grainIntensity: 0.028,
+                        grainSize: 0.9,
+                        chromaticAberration: 0.006
+                    }
+                };
+                
+                Object.assign(this.state, presets[preset]);
+                this.updateSliders();
+            },
+            
+            updateSliders() {
+                document.querySelectorAll('input[type="range"]').forEach(slider => {
+                    const uniform = slider.oninput.toString().match(/updateUniform\('(\w+)'/);
+                    if(uniform && this.state[uniform[1]] !== undefined) {
+                        slider.value = this.state[uniform[1]];
+                    }
+                });
+            },
+            
+            export4K() {
+                const originalWidth = this.canvas.width;
+                const originalHeight = this.canvas.height;
+                
+                // Resize to 4K
+                this.canvas.width = 3840;
+                this.canvas.height = 2160;
+                this.gl.viewport(0, 0, 3840, 2160);
+                
+                // Render one frame
+                this.updateUniforms();
+                this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
+                
+                // Export
+                this.canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `moonpay-optical-${Date.now()}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    // Restore original size
+                    this.canvas.width = originalWidth;
+                    this.canvas.height = originalHeight;
+                    this.gl.viewport(0, 0, originalWidth, originalHeight);
+                });
+            },
+            
+            saveCustomPreset() {
+                const name = prompt('Enter a name for this preset:');
+                if (!name) return;
+                
+                // Get current state
+                const preset = {
+                    name: name,
+                    settings: {
+                        colors: [...this.state.colors],
+                        hardness: this.state.hardness,
+                        diffusion: this.state.diffusion,
+                        hotspotGlow: this.state.hotspotGlow,
+                        focusIntensity: this.state.focusIntensity,
+                        focusContrast: this.state.focusContrast,
+                        warpStrength: this.state.warpStrength,
+                        warpScale: this.state.warpScale,
+                        grainIntensity: this.state.grainIntensity,
+                        grainSize: this.state.grainSize,
+                        chromaticAberration: this.state.chromaticAberration
+                    },
+                    timestamp: Date.now()
+                };
+                
+                // Load existing presets
+                let customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
+                
+                // Add new preset
+                customPresets.push(preset);
+                
+                // Save to localStorage
+                localStorage.setItem('opticalEnginePresets', JSON.stringify(customPresets));
+                
+                // Update UI
+                this.loadCustomPresets();
+                
+                alert(`Preset "${name}" saved!`);
+            },
+            
+            loadCustomPresets() {
+                const customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
+                const section = document.getElementById('customPresetsSection');
+                const list = document.getElementById('customPresetsList');
+                
+                if (customPresets.length === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+                
+                section.style.display = 'block';
+                list.innerHTML = '';
+                
+                customPresets.forEach((preset, index) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'flex gap-2';
+                    
+                    const loadBtn = document.createElement('button');
+                    loadBtn.className = 'btn flex-1';
+                    loadBtn.textContent = preset.name;
+                    loadBtn.onclick = () => this.applyCustomPreset(index);
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn';
+                    deleteBtn.textContent = '🗑️';
+                    deleteBtn.style.padding = '8px 12px';
+                    deleteBtn.onclick = () => this.deleteCustomPreset(index);
+                    
+                    const exportBtn = document.createElement('button');
+                    exportBtn.className = 'btn';
+                    exportBtn.textContent = '📤';
+                    exportBtn.style.padding = '8px 12px';
+                    exportBtn.title = 'Export preset';
+                    exportBtn.onclick = () => this.exportPreset(index);
+                    
+                    wrapper.appendChild(loadBtn);
+                    wrapper.appendChild(exportBtn);
+                    wrapper.appendChild(deleteBtn);
+                    list.appendChild(wrapper);
+                });
+            },
+            
+            applyCustomPreset(index) {
+                const customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
+                if (!customPresets[index]) return;
+                
+                const preset = customPresets[index].settings;
+                Object.assign(this.state, preset);
+                this.renderColorPalette();
+                this.updateSliders();
+            },
+            
+            deleteCustomPreset(index) {
+                if (!confirm('Delete this preset?')) return;
+                
+                let customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
+                customPresets.splice(index, 1);
+                localStorage.setItem('opticalEnginePresets', JSON.stringify(customPresets));
+                this.loadCustomPresets();
+            },
+            
+            exportPreset(index) {
+                const customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
+                if (!customPresets[index]) return;
+                
+                const preset = customPresets[index];
+                const json = JSON.stringify(preset, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${preset.name.replace(/\s+/g, '-')}-preset.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+            
+            importPreset(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const preset = JSON.parse(e.target.result);
+                        
+                        // Validate preset structure
+                        if (!preset.name || !preset.settings) {
+                            alert('Invalid preset file');
+                            return;
+                        }
+                        
+                        // Load existing presets
+                        let customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
+                        
+                        // Check for duplicate names
+                        const existingIndex = customPresets.findIndex(p => p.name === preset.name);
+                        if (existingIndex !== -1) {
+                            if (!confirm(`Preset "${preset.name}" already exists. Replace it?`)) return;
+                            customPresets[existingIndex] = preset;
+                        } else {
+                            customPresets.push(preset);
+                        }
+                        
+                        // Save and reload
+                        localStorage.setItem('opticalEnginePresets', JSON.stringify(customPresets));
+                        this.loadCustomPresets();
+                        
+                        alert(`Preset "${preset.name}" imported successfully!`);
+                    } catch (error) {
+                        alert('Error importing preset: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+                
+                // Reset file input
+                event.target.value = '';
+            }
+        };
+        
+        // Initialize on load
+        window.addEventListener('load', () => app.init());
+    </script>
+</body>
+</html>

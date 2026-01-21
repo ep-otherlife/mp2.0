@@ -203,7 +203,7 @@
             
             <div class="mb-4">
                 <label class="label">Grain Intensity</label>
-                <input type="range" class="slider" min="0" max="0.1" step="0.001" value="0.03" 
+                <input type="range" class="slider" min="0" max="0.1" step="0.001" value="0" 
                        oninput="app.updateUniform('grainIntensity', parseFloat(this.value))">
             </div>
             
@@ -268,7 +268,7 @@
                 warpStrength: 0.5,
                 warpScale: 1.0,
                 animSpeed: 0.3,
-                grainIntensity: 0.03,
+                grainIntensity: 0,
                 grainSize: 1.0,
                 chromaticAberration: 0.003,
                 mouseX: 0.5,

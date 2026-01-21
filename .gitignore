@@ -31,3 +31,13 @@
 
 # Backup files
 *.bak
+
+# Old React project (not needed for optical engine)
+src/
+node_modules/
+package.json
+package-lock.json
+tsconfig.json
+tsconfig.node.json
+vite.config.ts
+index.html

@@ -1,14 +1,5 @@
 {
-  "version": 2,
-  "builds": [],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
-  "buildCommand": "",
-  "outputDirectory": ".",
-  "installCommand": "",
-  "framework": null
+  "rewrites": [
+    { "source": "/", "destination": "/optical-engine.html" }
+  ]
 }

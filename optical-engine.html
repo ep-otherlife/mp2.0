@@ -322,8 +322,27 @@
         </div>
         
         <!-- Export -->
-        <div>
-            <button class="btn btn-primary w-full" onclick="app.export4K()">Export 4K PNG</button>
+        <div class="mb-6">
+            <div class="label mb-3" style="color: #903DD9;">Export</div>
+            <button class="btn btn-primary w-full mb-3" onclick="app.export4K()">📷 Export 4K PNG</button>
+            
+            <div class="flex gap-2 mb-2">
+                <div class="flex-1">
+                    <label class="label">Duration (sec)</label>
+                    <input type="number" id="videoDuration" value="5" min="1" max="60" 
+                           class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-sm">
+                </div>
+                <div class="flex-1">
+                    <label class="label">Resolution</label>
+                    <select id="videoResolution" class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-sm">
+                        <option value="1080">1080p</option>
+                        <option value="1440">1440p</option>
+                        <option value="2160">4K</option>
+                    </select>
+                </div>
+            </div>
+            <button id="recordBtn" class="btn btn-primary w-full" onclick="app.toggleRecording()">🎬 Record Video</button>
+            <p id="recordStatus" class="text-xs text-gray-400 mt-2 text-center" style="display: none;"></p>
         </div>
     </div>
 
@@ -1166,6 +1185,126 @@
                     this.canvas.height = originalHeight;
                     this.gl.viewport(0, 0, originalWidth, originalHeight);
                 });
+            },
+            
+            // Video recording state
+            mediaRecorder: null,
+            recordedChunks: [],
+            isRecording: false,
+            
+            toggleRecording() {
+                if (this.isRecording) {
+                    this.stopRecording();
+                } else {
+                    this.startRecording();
+                }
+            },
+            
+            startRecording() {
+                const duration = parseInt(document.getElementById('videoDuration').value) || 5;
+                const resolution = document.getElementById('videoResolution').value;
+                
+                // Set resolution
+                const resolutions = {
+                    '1080': { w: 1920, h: 1080 },
+                    '1440': { w: 2560, h: 1440 },
+                    '2160': { w: 3840, h: 2160 }
+                };
+                const res = resolutions[resolution];
+                
+                // Store original size
+                this.originalWidth = this.canvas.width;
+                this.originalHeight = this.canvas.height;
+                
+                // Resize canvas for recording
+                this.canvas.width = res.w;
+                this.canvas.height = res.h;
+                this.gl.viewport(0, 0, res.w, res.h);
+                
+                // Get canvas stream
+                const stream = this.canvas.captureStream(60); // 60 FPS
+                
+                // Setup MediaRecorder
+                const options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 20000000 };
+                
+                // Fallback if VP9 not supported
+                if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                    options.mimeType = 'video/webm';
+                }
+                
+                this.mediaRecorder = new MediaRecorder(stream, options);
+                this.recordedChunks = [];
+                
+                this.mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) {
+                        this.recordedChunks.push(e.data);
+                    }
+                };
+                
+                this.mediaRecorder.onstop = () => {
+                    this.exportVideo();
+                };
+                
+                // Start recording
+                this.mediaRecorder.start();
+                this.isRecording = true;
+                
+                // Update UI
+                const btn = document.getElementById('recordBtn');
+                const status = document.getElementById('recordStatus');
+                btn.textContent = '⏹️ Stop Recording';
+                btn.style.background = 'rgba(220, 50, 50, 0.3)';
+                status.style.display = 'block';
+                
+                // Countdown timer
+                let remaining = duration;
+                status.textContent = `Recording... ${remaining}s remaining`;
+                
+                this.recordingInterval = setInterval(() => {
+                    remaining--;
+                    status.textContent = `Recording... ${remaining}s remaining`;
+                    
+                    if (remaining <= 0) {
+                        this.stopRecording();
+                    }
+                }, 1000);
+            },
+            
+            stopRecording() {
+                if (!this.isRecording) return;
+                
+                clearInterval(this.recordingInterval);
+                this.mediaRecorder.stop();
+                this.isRecording = false;
+                
+                // Restore canvas size
+                this.canvas.width = this.originalWidth;
+                this.canvas.height = this.originalHeight;
+                this.gl.viewport(0, 0, this.originalWidth, this.originalHeight);
+                
+                // Update UI
+                const btn = document.getElementById('recordBtn');
+                const status = document.getElementById('recordStatus');
+                btn.textContent = '🎬 Record Video';
+                btn.style.background = '';
+                status.textContent = 'Processing video...';
+            },
+            
+            exportVideo() {
+                const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `moonpay-optical-${Date.now()}.webm`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                // Update status
+                const status = document.getElementById('recordStatus');
+                status.textContent = 'Video exported! (WebM format)';
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 3000);
             },
             
             saveCustomPreset() {

@@ -140,66 +140,154 @@
             </div>
         </div>
         
-        <!-- Emitter Controls -->
+        <!-- ===== CURVE SHAPE ===== -->
         <div class="mb-6">
-            <div class="label mb-3">Emitter Properties</div>
+            <div class="label mb-3" style="color: #903DD9;">Curve Shape</div>
             
             <div class="mb-4">
-                <label class="label">Hardness</label>
+                <label class="label">Curve Frequency <span class="text-gray-500">(width of curves)</span></label>
+                <input type="range" class="slider" min="0.1" max="2" step="0.05" value="0.5" 
+                       oninput="app.updateUniform('curveFrequency', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Curve Amplitude <span class="text-gray-500">(distortion amount)</span></label>
+                <input type="range" class="slider" min="0" max="3" step="0.05" value="1.2" 
+                       oninput="app.updateUniform('curveAmplitude', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Curve Complexity <span class="text-gray-500">(layer detail)</span></label>
+                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.5" 
+                       oninput="app.updateUniform('curveComplexity', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Warp Scale <span class="text-gray-500">(overall size)</span></label>
+                <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.0" 
+                       oninput="app.updateUniform('warpScale', parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <!-- ===== FLOW HIGHLIGHTS ===== -->
+        <div class="mb-6">
+            <div class="label mb-3" style="color: #903DD9;">Flow Highlights</div>
+            
+            <div class="mb-4">
+                <label class="label">Highlight Intensity</label>
+                <input type="range" class="slider" min="0" max="1" step="0.01" value="0.3" 
+                       oninput="app.updateUniform('highlightIntensity', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Highlight Width <span class="text-gray-500">(band thickness)</span></label>
+                <input type="range" class="slider" min="0.1" max="2" step="0.05" value="0.8" 
+                       oninput="app.updateUniform('highlightWidth', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Highlight Frequency <span class="text-gray-500">(band spacing)</span></label>
+                <input type="range" class="slider" min="0.1" max="2" step="0.05" value="0.5" 
+                       oninput="app.updateUniform('highlightFrequency', parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <!-- ===== LIGHT EMITTERS ===== -->
+        <div class="mb-6">
+            <div class="label mb-3" style="color: #903DD9;">Light Emitters</div>
+            
+            <div class="mb-4">
+                <label class="label">Hardness <span class="text-gray-500">(edge sharpness)</span></label>
                 <input type="range" class="slider" min="0" max="1" step="0.01" value="0.15" 
                        oninput="app.updateUniform('hardness', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Diffusion</label>
-                <input type="range" class="slider" min="0" max="2" step="0.01" value="1.4" 
+                <label class="label">Diffusion <span class="text-gray-500">(spread distance)</span></label>
+                <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.4" 
                        oninput="app.updateUniform('diffusion', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Hotspot Glow</label>
+                <label class="label">Hotspot Glow <span class="text-gray-500">(brightness)</span></label>
                 <input type="range" class="slider" min="0" max="2" step="0.01" value="1.0" 
                        oninput="app.updateUniform('hotspotGlow', parseFloat(this.value))">
             </div>
-        </div>
-        
-        <!-- Spatial Focus -->
-        <div class="mb-6">
-            <div class="label mb-3">Spatial Focus</div>
             
             <div class="mb-4">
-                <label class="label">Focus Intensity</label>
-                <input type="range" class="slider" min="0" max="1" step="0.01" value="0.3" 
+                <label class="label">Emitter Speed <span class="text-gray-500">(orbit velocity)</span></label>
+                <input type="range" class="slider" min="0" max="2" step="0.05" value="0.5" 
+                       oninput="app.updateUniform('emitterSpeed', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Emitter Radius <span class="text-gray-500">(orbit size)</span></label>
+                <input type="range" class="slider" min="0.1" max="1" step="0.05" value="0.4" 
+                       oninput="app.updateUniform('emitterRadius', parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <!-- ===== LIGHT MIXING ===== -->
+        <div class="mb-6">
+            <div class="label mb-3" style="color: #903DD9;">Light Mixing</div>
+            
+            <div class="mb-4">
+                <label class="label">Ambient Light <span class="text-gray-500">(base fill)</span></label>
+                <input type="range" class="slider" min="0" max="0.2" step="0.005" value="0.02" 
+                       oninput="app.updateUniform('ambientLight', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Light Layer 1 <span class="text-gray-500">(primary)</span></label>
+                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.6" 
+                       oninput="app.updateUniform('lightLayer1', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Light Layer 2 <span class="text-gray-500">(secondary)</span></label>
+                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.55" 
+                       oninput="app.updateUniform('lightLayer2', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Light Layer 3 <span class="text-gray-500">(tertiary)</span></label>
+                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.5" 
+                       oninput="app.updateUniform('lightLayer3', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Light Layer 4 <span class="text-gray-500">(mouse)</span></label>
+                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.55" 
+                       oninput="app.updateUniform('lightLayer4', parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <!-- ===== SPATIAL FOCUS ===== -->
+        <div class="mb-6">
+            <div class="label mb-3" style="color: #903DD9;">Spatial Focus</div>
+            
+            <div class="mb-4">
+                <label class="label">Focus Intensity <span class="text-gray-500">(DOF strength)</span></label>
+                <input type="range" class="slider" min="0" max="1" step="0.01" value="0.65" 
                        oninput="app.updateUniform('focusIntensity', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Focus Contrast</label>
-                <input type="range" class="slider" min="1" max="10" step="0.1" value="3.0" 
+                <label class="label">Focus Contrast <span class="text-gray-500">(sharp/blur transition)</span></label>
+                <input type="range" class="slider" min="1" max="10" step="0.1" value="6.5" 
                        oninput="app.updateUniform('focusContrast', parseFloat(this.value))">
             </div>
-        </div>
-        
-        <!-- Domain Warping -->
-        <div class="mb-6">
-            <div class="label mb-3">Domain Warping</div>
             
             <div class="mb-4">
-                <label class="label">Warp Strength</label>
-                <input type="range" class="slider" min="0" max="2" step="0.01" value="0.5" 
-                       oninput="app.updateUniform('warpStrength', parseFloat(this.value))">
-            </div>
-            
-            <div class="mb-4">
-                <label class="label">Warp Scale</label>
-                <input type="range" class="slider" min="0.1" max="5" step="0.1" value="1.5" 
-                       oninput="app.updateUniform('warpScale', parseFloat(this.value))">
+                <label class="label">Focus Scale <span class="text-gray-500">(noise size)</span></label>
+                <input type="range" class="slider" min="0.5" max="3" step="0.1" value="1.2" 
+                       oninput="app.updateUniform('focusScale', parseFloat(this.value))">
             </div>
         </div>
         
-        <!-- Post-Processing Effects -->
+        <!-- ===== POST-PROCESSING ===== -->
         <div class="mb-6">
-            <div class="label mb-3">Post-Processing</div>
+            <div class="label mb-3" style="color: #903DD9;">Post-Processing</div>
             
             <div class="mb-4">
                 <label class="label">Grain Intensity</label>
@@ -215,13 +303,21 @@
             
             <div class="mb-4">
                 <label class="label">Chromatic Aberration</label>
-                <input type="range" class="slider" min="0" max="0.01" step="0.0001" value="0.003" 
+                <input type="range" class="slider" min="0" max="0.02" step="0.0005" value="0.003" 
                        oninput="app.updateUniform('chromaticAberration', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Contrast Curve <span class="text-gray-500">(output contrast)</span></label>
+                <input type="range" class="slider" min="0.5" max="2" step="0.05" value="1.0" 
+                       oninput="app.updateUniform('contrastCurve', parseFloat(this.value))">
             </div>
         </div>
         
-        <!-- Animation -->
+        <!-- ===== ANIMATION ===== -->
         <div class="mb-6">
+            <div class="label mb-3" style="color: #903DD9;">Animation</div>
+            
             <div class="mb-4">
                 <label class="label">Animation Speed</label>
                 <input type="range" class="slider" min="0" max="2" step="0.01" value="0.3" 
@@ -260,17 +356,39 @@
             uniforms: {},
             state: {
                 colors: ['#000000', '#0E0D38', '#903DD9', '#BBA1FF', '#D8C8FF', '#FFFFFF'],
+                // Curve Shape
+                curveFrequency: 0.5,
+                curveAmplitude: 1.2,
+                curveComplexity: 0.5,
+                warpScale: 1.0,
+                // Flow Highlights
+                highlightIntensity: 0.3,
+                highlightWidth: 0.8,
+                highlightFrequency: 0.5,
+                // Light Emitters
                 hardness: 0.15,
                 diffusion: 1.4,
                 hotspotGlow: 1.0,
+                emitterSpeed: 0.5,
+                emitterRadius: 0.4,
+                // Light Mixing
+                ambientLight: 0.02,
+                lightLayer1: 0.6,
+                lightLayer2: 0.55,
+                lightLayer3: 0.5,
+                lightLayer4: 0.55,
+                // Spatial Focus
                 focusIntensity: 0.65,
                 focusContrast: 6.5,
-                warpStrength: 0.5,
-                warpScale: 1.0,
-                animSpeed: 0.3,
+                focusScale: 1.2,
+                // Post-Processing
                 grainIntensity: 0,
                 grainSize: 1.0,
                 chromaticAberration: 0.003,
+                contrastCurve: 1.0,
+                // Animation
+                animSpeed: 0.3,
+                // Internal
                 mouseX: 0.5,
                 mouseY: 0.5,
                 time: 0
@@ -324,23 +442,41 @@
                     uniform float time;
                     uniform vec2 mouse;
                     
-                    // Emitter properties
+                    // Curve Shape
+                    uniform float curveFrequency;
+                    uniform float curveAmplitude;
+                    uniform float curveComplexity;
+                    uniform float warpScale;
+                    
+                    // Flow Highlights
+                    uniform float highlightIntensity;
+                    uniform float highlightWidth;
+                    uniform float highlightFrequency;
+                    
+                    // Light Emitters
                     uniform float hardness;
                     uniform float diffusion;
                     uniform float hotspotGlow;
+                    uniform float emitterSpeed;
+                    uniform float emitterRadius;
+                    
+                    // Light Mixing
+                    uniform float ambientLight;
+                    uniform float lightLayer1;
+                    uniform float lightLayer2;
+                    uniform float lightLayer3;
+                    uniform float lightLayer4;
                     
                     // Focus properties
                     uniform float focusIntensity;
                     uniform float focusContrast;
-                    
-                    // Warp properties
-                    uniform float warpStrength;
-                    uniform float warpScale;
+                    uniform float focusScale;
                     
                     // Post-processing effects
                     uniform float grainIntensity;
                     uniform float grainSize;
                     uniform float chromaticAberration;
+                    uniform float contrastCurve;
                     
                     // Color palette (max 10 colors)
                     uniform vec3 colors[10];
@@ -401,41 +537,57 @@
                     }
                     
                     // Broad sweeping curves - like silk ribbons or light through glass
-                    // Key: fewer iterations + lower frequencies = WIDE curves, not thin tendrils
-                    vec2 iterativeWarp(vec2 p, float strength, float scale, float timeOffset) {
-                        vec2 uv = p * scale * 0.5; // Lower base scale for broader forms
+                    // Uses curveFrequency, curveAmplitude, curveComplexity uniforms
+                    vec2 iterativeWarp(vec2 p, float scale, float timeOffset) {
+                        vec2 uv = p * scale * 0.5;
                         
-                        // Only 3 iterations with LOW frequencies for broad, sweeping curves
-                        // Frequency 0.4-0.8 creates wide bands (vs 2.5 which creates thin lines)
-                        uv.x += strength * 1.2 * sin(0.4 * uv.y + time * 0.2 + timeOffset);
-                        uv.y += strength * 1.2 * cos(0.35 * uv.x + time * 0.22 + timeOffset);
+                        // Base frequency from uniform (lower = wider curves)
+                        float freq = curveFrequency;
+                        float amp = curveAmplitude;
                         
-                        uv.x += strength * 0.7 * sin(0.7 * uv.y + time * 0.18 + timeOffset);
-                        uv.y += strength * 0.7 * cos(0.6 * uv.x + time * 0.2 + timeOffset);
+                        // Layer 1: Primary broad sweep
+                        uv.x += amp * sin(freq * 0.8 * uv.y + time * 0.2 + timeOffset);
+                        uv.y += amp * cos(freq * 0.7 * uv.x + time * 0.22 + timeOffset);
                         
-                        uv.x += strength * 0.4 * sin(1.1 * uv.y + time * 0.15 + timeOffset);
-                        uv.y += strength * 0.4 * cos(0.9 * uv.x + time * 0.17 + timeOffset);
+                        // Layer 2: Secondary modulation (scaled by complexity)
+                        float amp2 = amp * (0.5 + curveComplexity * 0.3);
+                        uv.x += amp2 * sin(freq * 1.4 * uv.y + time * 0.18 + timeOffset);
+                        uv.y += amp2 * cos(freq * 1.2 * uv.x + time * 0.2 + timeOffset);
+                        
+                        // Layer 3: Tertiary detail (fades with lower complexity)
+                        float amp3 = amp * curveComplexity * 0.4;
+                        uv.x += amp3 * sin(freq * 2.2 * uv.y + time * 0.15 + timeOffset);
+                        uv.y += amp3 * cos(freq * 1.8 * uv.x + time * 0.17 + timeOffset);
                         
                         return uv;
                     }
                     
                     // Soft, broad glow bands - like diffuse light
-                    float flowHighlight(vec2 p, float strength, float scale) {
+                    // Uses highlightIntensity, highlightWidth, highlightFrequency uniforms
+                    float flowHighlight(vec2 p, float scale) {
                         vec2 uv = p * scale * 0.4;
                         
-                        // Only 2 iterations for very broad, soft bands
-                        uv.x += strength * sin(0.5 * uv.y + time * 0.15);
-                        uv.y += strength * cos(0.45 * uv.x + time * 0.17);
+                        float freq = highlightFrequency;
+                        float amp = curveAmplitude * 0.8;
                         
-                        uv.x += strength * 0.5 * sin(0.8 * uv.y + time * 0.12);
-                        uv.y += strength * 0.5 * cos(0.7 * uv.x + time * 0.14);
+                        // Layer 1: Broad sweep
+                        uv.x += amp * sin(freq * uv.y + time * 0.15);
+                        uv.y += amp * cos(freq * 0.9 * uv.x + time * 0.17);
                         
-                        // Create BROAD flowing bands of light (lower frequency = wider bands)
-                        float bands = abs(sin(time * 0.1 - uv.y * 0.5 - uv.x * 0.4));
+                        // Layer 2: Secondary (scales with complexity)
+                        float amp2 = amp * (0.3 + curveComplexity * 0.3);
+                        uv.x += amp2 * sin(freq * 1.6 * uv.y + time * 0.12);
+                        uv.y += amp2 * cos(freq * 1.4 * uv.x + time * 0.14);
                         
-                        // Softer, more diffuse highlight (higher denominator = softer glow)
-                        float highlight = 0.15 / (bands + 0.35);
-                        return clamp(highlight, 0.0, 0.8);
+                        // Create flowing bands of light
+                        float bandFreq = 0.3 + (1.0 - highlightWidth) * 0.7;
+                        float bands = abs(sin(time * 0.1 - uv.y * bandFreq - uv.x * bandFreq * 0.8));
+                        
+                        // Width controls the band thickness
+                        float width = 0.1 + highlightWidth * 0.15;
+                        float highlight = width / (bands + 0.2 + highlightWidth * 0.2);
+                        
+                        return clamp(highlight * highlightIntensity, 0.0, 1.0);
                     }
                     
                     // Calculate light emitter with smooth volumetric falloff
@@ -598,14 +750,14 @@
                     float calculateLightIntensity(vec2 p, vec2 offset) {
                         vec2 samplePos = p + offset;
                         
-                        // Apply iterative domain distortion
-                        vec2 wp = iterativeWarp(samplePos, warpStrength, warpScale, 0.0);
+                        // Apply iterative domain distortion (uses curveFrequency, curveAmplitude, curveComplexity)
+                        vec2 wp = iterativeWarp(samplePos, warpScale, 0.0);
                         
-                        // Generate flow-based highlights
-                        float flowGlow = flowHighlight(samplePos, warpStrength * 0.8, warpScale);
+                        // Generate flow-based highlights (uses highlightIntensity, highlightWidth, highlightFrequency)
+                        float flowGlow = flowHighlight(samplePos, warpScale);
                         
-                        // Calculate focus map
-                        float focusMap = fbm(samplePos * 1.2 + time * 0.03, 2);
+                        // Calculate focus map (uses focusScale)
+                        float focusMap = fbm(samplePos * focusScale + time * 0.03, 2);
                         focusMap = smoothstep(0.2, 0.8, focusMap);
                         focusMap = pow(focusMap, focusContrast);
                         focusMap = mix(0.15, 1.0, focusMap * focusIntensity + (1.0 - focusIntensity));
@@ -616,10 +768,12 @@
                         float modHardness = hardness * sharpness;
                         float modDiffusion = diffusion * blur;
                         
-                        // Four light emitters
-                        vec2 emitter1Pos = vec2(cos(time * 0.25) * 0.35, sin(time * 0.25) * 0.35);
-                        vec2 emitter2Pos = vec2(cos(time * 0.18 + 3.14159) * 0.45, sin(time * 0.18 + 3.14159) * 0.25);
-                        vec2 emitter3Pos = vec2(cos(time * 0.22 + 1.57) * 0.25, sin(time * 0.22 + 1.57) * 0.45);
+                        // Four light emitters (uses emitterSpeed, emitterRadius)
+                        float speed = emitterSpeed * 0.5;
+                        float radius = emitterRadius;
+                        vec2 emitter1Pos = vec2(cos(time * speed) * radius, sin(time * speed) * radius);
+                        vec2 emitter2Pos = vec2(cos(time * speed * 0.72 + 3.14159) * radius * 1.2, sin(time * speed * 0.72 + 3.14159) * radius * 0.7);
+                        vec2 emitter3Pos = vec2(cos(time * speed * 0.88 + 1.57) * radius * 0.7, sin(time * speed * 0.88 + 1.57) * radius * 1.2);
                         vec2 emitter4Pos = mouse * 2.0 - 1.0;
                         
                         // Calculate emitters
@@ -628,18 +782,20 @@
                         float light3 = calcEmitter(wp, emitter3Pos, modHardness, modDiffusion * 1.5);
                         float light4 = calcEmitter(wp, emitter4Pos, modHardness * 1.5, modDiffusion * 0.7);
                         
-                        // Layer lights with reduced intensity
+                        // Layer lights using uniform weights
                         float totalLight = 0.0;
-                        totalLight += light1 * 0.6;
-                        totalLight += light2 * 0.55;
-                        totalLight += light3 * 0.5;
-                        totalLight += light4 * 0.55;
+                        totalLight += light1 * lightLayer1;
+                        totalLight += light2 * lightLayer2;
+                        totalLight += light3 * lightLayer3;
+                        totalLight += light4 * lightLayer4;
                         
-                        // Add ambient and flow highlights (reduced)
-                        totalLight += fbm(wp * 0.8 + time * 0.02, 2) * 0.02;
-                        totalLight += flowGlow * 0.08;
+                        // Add ambient and flow highlights
+                        totalLight += fbm(wp * 0.8 + time * 0.02, 2) * ambientLight;
+                        totalLight += flowGlow;
                         totalLight *= hotspotGlow;
-                        totalLight = smoothstep(0.0, 1.0, totalLight * 0.75);
+                        
+                        // Apply contrast curve
+                        totalLight = smoothstep(0.0, 1.0, totalLight * (0.6 + contrastCurve * 0.4));
                         
                         return totalLight;
                     }
@@ -716,16 +872,37 @@
                     resolution: this.gl.getUniformLocation(this.program, 'resolution'),
                     time: this.gl.getUniformLocation(this.program, 'time'),
                     mouse: this.gl.getUniformLocation(this.program, 'mouse'),
+                    // Curve Shape
+                    curveFrequency: this.gl.getUniformLocation(this.program, 'curveFrequency'),
+                    curveAmplitude: this.gl.getUniformLocation(this.program, 'curveAmplitude'),
+                    curveComplexity: this.gl.getUniformLocation(this.program, 'curveComplexity'),
+                    warpScale: this.gl.getUniformLocation(this.program, 'warpScale'),
+                    // Flow Highlights
+                    highlightIntensity: this.gl.getUniformLocation(this.program, 'highlightIntensity'),
+                    highlightWidth: this.gl.getUniformLocation(this.program, 'highlightWidth'),
+                    highlightFrequency: this.gl.getUniformLocation(this.program, 'highlightFrequency'),
+                    // Light Emitters
                     hardness: this.gl.getUniformLocation(this.program, 'hardness'),
                     diffusion: this.gl.getUniformLocation(this.program, 'diffusion'),
                     hotspotGlow: this.gl.getUniformLocation(this.program, 'hotspotGlow'),
+                    emitterSpeed: this.gl.getUniformLocation(this.program, 'emitterSpeed'),
+                    emitterRadius: this.gl.getUniformLocation(this.program, 'emitterRadius'),
+                    // Light Mixing
+                    ambientLight: this.gl.getUniformLocation(this.program, 'ambientLight'),
+                    lightLayer1: this.gl.getUniformLocation(this.program, 'lightLayer1'),
+                    lightLayer2: this.gl.getUniformLocation(this.program, 'lightLayer2'),
+                    lightLayer3: this.gl.getUniformLocation(this.program, 'lightLayer3'),
+                    lightLayer4: this.gl.getUniformLocation(this.program, 'lightLayer4'),
+                    // Focus
                     focusIntensity: this.gl.getUniformLocation(this.program, 'focusIntensity'),
                     focusContrast: this.gl.getUniformLocation(this.program, 'focusContrast'),
-                    warpStrength: this.gl.getUniformLocation(this.program, 'warpStrength'),
-                    warpScale: this.gl.getUniformLocation(this.program, 'warpScale'),
+                    focusScale: this.gl.getUniformLocation(this.program, 'focusScale'),
+                    // Post-processing
                     grainIntensity: this.gl.getUniformLocation(this.program, 'grainIntensity'),
                     grainSize: this.gl.getUniformLocation(this.program, 'grainSize'),
                     chromaticAberration: this.gl.getUniformLocation(this.program, 'chromaticAberration'),
+                    contrastCurve: this.gl.getUniformLocation(this.program, 'contrastCurve'),
+                    // Color
                     colorCount: this.gl.getUniformLocation(this.program, 'colorCount')
                 };
                 
@@ -779,16 +956,37 @@
                 this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
                 this.gl.uniform1f(this.uniforms.time, this.state.time);
                 this.gl.uniform2f(this.uniforms.mouse, this.state.mouseX, this.state.mouseY);
+                // Curve Shape
+                this.gl.uniform1f(this.uniforms.curveFrequency, this.state.curveFrequency);
+                this.gl.uniform1f(this.uniforms.curveAmplitude, this.state.curveAmplitude);
+                this.gl.uniform1f(this.uniforms.curveComplexity, this.state.curveComplexity);
+                this.gl.uniform1f(this.uniforms.warpScale, this.state.warpScale);
+                // Flow Highlights
+                this.gl.uniform1f(this.uniforms.highlightIntensity, this.state.highlightIntensity);
+                this.gl.uniform1f(this.uniforms.highlightWidth, this.state.highlightWidth);
+                this.gl.uniform1f(this.uniforms.highlightFrequency, this.state.highlightFrequency);
+                // Light Emitters
                 this.gl.uniform1f(this.uniforms.hardness, this.state.hardness);
                 this.gl.uniform1f(this.uniforms.diffusion, this.state.diffusion);
                 this.gl.uniform1f(this.uniforms.hotspotGlow, this.state.hotspotGlow);
+                this.gl.uniform1f(this.uniforms.emitterSpeed, this.state.emitterSpeed);
+                this.gl.uniform1f(this.uniforms.emitterRadius, this.state.emitterRadius);
+                // Light Mixing
+                this.gl.uniform1f(this.uniforms.ambientLight, this.state.ambientLight);
+                this.gl.uniform1f(this.uniforms.lightLayer1, this.state.lightLayer1);
+                this.gl.uniform1f(this.uniforms.lightLayer2, this.state.lightLayer2);
+                this.gl.uniform1f(this.uniforms.lightLayer3, this.state.lightLayer3);
+                this.gl.uniform1f(this.uniforms.lightLayer4, this.state.lightLayer4);
+                // Focus
                 this.gl.uniform1f(this.uniforms.focusIntensity, this.state.focusIntensity);
                 this.gl.uniform1f(this.uniforms.focusContrast, this.state.focusContrast);
-                this.gl.uniform1f(this.uniforms.warpStrength, this.state.warpStrength);
-                this.gl.uniform1f(this.uniforms.warpScale, this.state.warpScale);
+                this.gl.uniform1f(this.uniforms.focusScale, this.state.focusScale);
+                // Post-processing
                 this.gl.uniform1f(this.uniforms.grainIntensity, this.state.grainIntensity);
                 this.gl.uniform1f(this.uniforms.grainSize, this.state.grainSize);
                 this.gl.uniform1f(this.uniforms.chromaticAberration, this.state.chromaticAberration);
+                this.gl.uniform1f(this.uniforms.contrastCurve, this.state.contrastCurve);
+                // Color
                 this.gl.uniform1i(this.uniforms.colorCount, this.state.colors.length);
                 
                 // Update color uniforms
@@ -897,56 +1095,112 @@
             applyPreset(preset) {
                 const presets = {
                     softAurora: {
-                        // Ethereal & dreamy - minimal warp, soft diffusion
+                        // Ethereal & dreamy - broad soft curves
+                        curveFrequency: 0.3,
+                        curveAmplitude: 1.0,
+                        curveComplexity: 0.3,
+                        warpScale: 1.2,
+                        highlightIntensity: 0.2,
+                        highlightWidth: 1.0,
+                        highlightFrequency: 0.4,
                         hardness: 0.05,
-                        diffusion: 1.6,
+                        diffusion: 1.8,
                         hotspotGlow: 0.85,
-                        warpStrength: 0.3,
-                        warpScale: 0.9,
-                        focusIntensity: 0.15,
+                        emitterSpeed: 0.3,
+                        emitterRadius: 0.5,
+                        ambientLight: 0.03,
+                        lightLayer1: 0.6,
+                        lightLayer2: 0.5,
+                        lightLayer3: 0.4,
+                        lightLayer4: 0.5,
+                        focusIntensity: 0.2,
                         focusContrast: 2.5,
-                        grainIntensity: 0.025,
-                        grainSize: 0.8,
-                        chromaticAberration: 0.002
+                        focusScale: 1.5,
+                        grainIntensity: 0,
+                        grainSize: 1.0,
+                        chromaticAberration: 0.002,
+                        contrastCurve: 0.9
                     },
                     flowingGlass: {
-                        // Balanced & iridescent - smooth translucent flow
+                        // Balanced curves with clear bands
+                        curveFrequency: 0.5,
+                        curveAmplitude: 1.2,
+                        curveComplexity: 0.5,
+                        warpScale: 1.0,
+                        highlightIntensity: 0.35,
+                        highlightWidth: 0.8,
+                        highlightFrequency: 0.5,
                         hardness: 0.2,
-                        diffusion: 1.3,
+                        diffusion: 1.4,
                         hotspotGlow: 1.0,
-                        warpStrength: 0.6,
-                        warpScale: 1.1,
+                        emitterSpeed: 0.5,
+                        emitterRadius: 0.4,
+                        ambientLight: 0.02,
+                        lightLayer1: 0.6,
+                        lightLayer2: 0.55,
+                        lightLayer3: 0.5,
+                        lightLayer4: 0.55,
                         focusIntensity: 0.5,
                         focusContrast: 5.0,
-                        grainIntensity: 0.03,
+                        focusScale: 1.2,
+                        grainIntensity: 0,
                         grainSize: 1.0,
-                        chromaticAberration: 0.004
+                        chromaticAberration: 0.004,
+                        contrastCurve: 1.0
                     },
                     liquidOptics: {
-                        // Dynamic & layered - high contrast, dramatic flow
+                        // Dynamic with defined curves
+                        curveFrequency: 0.6,
+                        curveAmplitude: 1.5,
+                        curveComplexity: 0.6,
+                        warpScale: 0.9,
+                        highlightIntensity: 0.4,
+                        highlightWidth: 0.6,
+                        highlightFrequency: 0.6,
                         hardness: 0.35,
-                        diffusion: 1.0,
-                        hotspotGlow: 1.2,
-                        warpStrength: 0.8,
-                        warpScale: 0.8,
-                        focusIntensity: 0.75,
-                        focusContrast: 7.5,
-                        grainIntensity: 0.035,
-                        grainSize: 1.2,
-                        chromaticAberration: 0.005
+                        diffusion: 1.1,
+                        hotspotGlow: 1.1,
+                        emitterSpeed: 0.6,
+                        emitterRadius: 0.35,
+                        ambientLight: 0.015,
+                        lightLayer1: 0.65,
+                        lightLayer2: 0.6,
+                        lightLayer3: 0.55,
+                        lightLayer4: 0.6,
+                        focusIntensity: 0.7,
+                        focusContrast: 6.5,
+                        focusScale: 1.0,
+                        grainIntensity: 0,
+                        grainSize: 1.0,
+                        chromaticAberration: 0.005,
+                        contrastCurve: 1.1
                     },
                     ambientDepth: {
-                        // Atmospheric & volumetric - extreme depth of field
+                        // Atmospheric with extreme softness
+                        curveFrequency: 0.35,
+                        curveAmplitude: 0.9,
+                        curveComplexity: 0.25,
+                        warpScale: 1.4,
+                        highlightIntensity: 0.15,
+                        highlightWidth: 1.2,
+                        highlightFrequency: 0.35,
                         hardness: 0.08,
-                        diffusion: 1.5,
-                        hotspotGlow: 0.9,
-                        warpStrength: 0.4,
-                        warpScale: 1.3,
+                        diffusion: 2.0,
+                        hotspotGlow: 0.8,
+                        emitterSpeed: 0.25,
+                        emitterRadius: 0.55,
+                        ambientLight: 0.04,
+                        lightLayer1: 0.5,
+                        lightLayer2: 0.45,
+                        lightLayer3: 0.4,
+                        lightLayer4: 0.45,
                         focusIntensity: 0.85,
-                        focusContrast: 9.0,
-                        grainIntensity: 0.028,
-                        grainSize: 0.9,
-                        chromaticAberration: 0.006
+                        focusContrast: 8.0,
+                        focusScale: 1.8,
+                        grainIntensity: 0,
+                        grainSize: 1.0,
+                        chromaticAberration: 0.003,
+                        contrastCurve: 0.85
                     }
                 };
                 
@@ -996,21 +1250,43 @@
                 const name = prompt('Enter a name for this preset:');
                 if (!name) return;
                 
-                // Get current state
+                // Get current state - all parameters
                 const preset = {
                     name: name,
                     settings: {
                         colors: [...this.state.colors],
+                        // Curve Shape
+                        curveFrequency: this.state.curveFrequency,
+                        curveAmplitude: this.state.curveAmplitude,
+                        curveComplexity: this.state.curveComplexity,
+                        warpScale: this.state.warpScale,
+                        // Flow Highlights
+                        highlightIntensity: this.state.highlightIntensity,
+                        highlightWidth: this.state.highlightWidth,
+                        highlightFrequency: this.state.highlightFrequency,
+                        // Light Emitters
                         hardness: this.state.hardness,
                         diffusion: this.state.diffusion,
                         hotspotGlow: this.state.hotspotGlow,
+                        emitterSpeed: this.state.emitterSpeed,
+                        emitterRadius: this.state.emitterRadius,
+                        // Light Mixing
+                        ambientLight: this.state.ambientLight,
+                        lightLayer1: this.state.lightLayer1,
+                        lightLayer2: this.state.lightLayer2,
+                        lightLayer3: this.state.lightLayer3,
+                        lightLayer4: this.state.lightLayer4,
+                        // Focus
                         focusIntensity: this.state.focusIntensity,
                         focusContrast: this.state.focusContrast,
-                        warpStrength: this.state.warpStrength,
-                        warpScale: this.state.warpScale,
+                        focusScale: this.state.focusScale,
+                        // Post-processing
                         grainIntensity: this.state.grainIntensity,
                         grainSize: this.state.grainSize,
-                        chromaticAberration: this.state.chromaticAberration
+                        chromaticAberration: this.state.chromaticAberration,
+                        contrastCurve: this.state.contrastCurve,
+                        // Animation
+                        animSpeed: this.state.animSpeed
                     },
                     timestamp: Date.now()
                 };

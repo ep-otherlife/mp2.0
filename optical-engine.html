@@ -195,6 +195,12 @@
                 <input type="range" class="slider" min="0.1" max="5" step="0.1" value="1.5" 
                        oninput="app.updateUniform('warpScale', parseFloat(this.value))">
             </div>
+            
+            <div class="mb-4">
+                <label class="label">Flow Smoothness</label>
+                <input type="range" class="slider" min="0" max="1" step="0.01" value="0.7" 
+                       oninput="app.updateUniform('flowSmoothness', parseFloat(this.value))">
+            </div>
         </div>
         
         <!-- Post-Processing Effects -->
@@ -267,6 +273,7 @@
                 focusContrast: 6.5,
                 warpStrength: 0.5,
                 warpScale: 1.0,
+                flowSmoothness: 0.7,
                 animSpeed: 0.3,
                 grainIntensity: 0,
                 grainSize: 1.0,
@@ -336,6 +343,7 @@
                     // Warp properties
                     uniform float warpStrength;
                     uniform float warpScale;
+                    uniform float flowSmoothness;
                     
                     // Post-processing effects
                     uniform float grainIntensity;
@@ -400,32 +408,66 @@
                         return minDist;
                     }
                     
-                    // Iterative domain distortion for organic, flowing curves
-                    vec2 iterativeWarp(vec2 p, float strength, float scale, float timeOffset) {
-                        vec2 uv = p * scale;
+                    // Smooth gestural flow - creates broad, sweeping curves
+                    // Controlled by flowSmoothness: 0 = more detailed, 1 = very smooth/gestural
+                    vec2 gesturalWarp(vec2 p, float strength, float scale, float smoothness) {
+                        // Lower base frequency for broader curves
+                        vec2 uv = p * scale * (0.3 + smoothness * 0.2);
+                        float t = time * 0.2;
                         
-                        // Iterative feedback loop creates smooth, flowing patterns
-                        for(float i = 1.0; i < 8.0; i++){
-                            uv.x += (strength / i) * sin(i * 2.5 * uv.y + time * 0.5 + timeOffset);
-                            uv.y += (strength / i) * cos(i * 1.5 * uv.x + time * 0.5 + timeOffset);
-                        }
+                        // Smoothness controls frequency - higher smoothness = lower frequencies
+                        float freqMod = 1.0 - smoothness * 0.6; // 1.0 to 0.4
+                        
+                        // Layer 1: Primary broad sweep (always present)
+                        float f1 = 0.7 * freqMod;
+                        uv.x += strength * 1.2 * sin(f1 * uv.y + t);
+                        uv.y += strength * 1.2 * cos(f1 * uv.x * 0.9 + t * 1.1);
+                        
+                        // Layer 2: Secondary modulation (reduced by smoothness)
+                        float amp2 = strength * (0.6 - smoothness * 0.3);
+                        float f2 = 1.2 * freqMod;
+                        uv.x += amp2 * sin(f2 * uv.y + t * 0.8);
+                        uv.y += amp2 * cos(f2 * uv.x * 0.85 + t * 0.9);
+                        
+                        // Layer 3: Tertiary detail (fades with smoothness)
+                        float amp3 = strength * (0.3 - smoothness * 0.25);
+                        float f3 = 1.8 * freqMod;
+                        uv.x += amp3 * sin(f3 * uv.y + t * 1.2);
+                        uv.y += amp3 * cos(f3 * uv.x * 0.8 + t * 1.1);
+                        
+                        // Layer 4: Fine detail (only visible at low smoothness)
+                        float amp4 = strength * max(0.0, 0.15 - smoothness * 0.2);
+                        float f4 = 2.5 * freqMod;
+                        uv.x += amp4 * sin(f4 * uv.y + t * 0.7);
+                        uv.y += amp4 * cos(f4 * uv.x * 0.75 + t * 0.8);
                         
                         return uv;
                     }
                     
-                    // Generate flow-based highlights for sharp, luminous edges
-                    float flowHighlight(vec2 p, float strength, float scale) {
-                        vec2 uv = p * scale;
+                    // Generate smooth flowing highlights
+                    float flowHighlight(vec2 p, float strength, float scale, float smoothness) {
+                        vec2 uv = p * scale * (0.4 + smoothness * 0.3);
+                        float t = time * 0.15;
                         
-                        for(float i = 1.0; i < 6.0; i++){
-                            uv.x += (strength / i) * sin(i * 2.5 * uv.y + time * 0.3);
-                            uv.y += (strength / i) * cos(i * 1.5 * uv.x + time * 0.3);
-                        }
+                        float freqMod = 1.0 - smoothness * 0.5;
                         
-                        // Create subtle flowing bands of light
-                        float bands = abs(sin(time * 0.2 - uv.y - uv.x));
-                        float highlight = 0.1 / (bands + 0.2);
-                        return clamp(highlight, 0.0, 1.0);
+                        // Broad, sweeping displacement
+                        uv.x += strength * sin(0.8 * freqMod * uv.y + t);
+                        uv.y += strength * cos(0.7 * freqMod * uv.x + t * 1.1);
+                        
+                        // Secondary layer (fades with smoothness)
+                        float amp2 = strength * (0.5 - smoothness * 0.3);
+                        uv.x += amp2 * sin(1.3 * freqMod * uv.y + t * 0.9);
+                        uv.y += amp2 * cos(1.2 * freqMod * uv.x + t * 0.85);
+                        
+                        // Create broad flowing bands of light
+                        float bands = abs(sin(t * 0.3 - uv.y * 0.7 - uv.x * 0.6));
+                        
+                        // Softer highlight calculation
+                        float width = 0.15 + smoothness * 0.1; // Wider bands with more smoothness
+                        float highlight = width / (bands + 0.25);
+                        
+                        return clamp(highlight * 0.8, 0.0, 1.0);
                     }
                     
                     // Calculate light emitter with smooth volumetric falloff
@@ -588,11 +630,11 @@
                     float calculateLightIntensity(vec2 p, vec2 offset) {
                         vec2 samplePos = p + offset;
                         
-                        // Apply iterative domain distortion
-                        vec2 wp = iterativeWarp(samplePos, warpStrength, warpScale, 0.0);
+                        // Apply smooth gestural flow
+                        vec2 wp = gesturalWarp(samplePos, warpStrength, warpScale, flowSmoothness);
                         
                         // Generate flow-based highlights
-                        float flowGlow = flowHighlight(samplePos, warpStrength * 0.8, warpScale);
+                        float flowGlow = flowHighlight(samplePos, warpStrength * 0.8, warpScale, flowSmoothness);
                         
                         // Calculate focus map
                         float focusMap = fbm(samplePos * 1.2 + time * 0.03, 2);
@@ -713,6 +755,7 @@
                     focusContrast: this.gl.getUniformLocation(this.program, 'focusContrast'),
                     warpStrength: this.gl.getUniformLocation(this.program, 'warpStrength'),
                     warpScale: this.gl.getUniformLocation(this.program, 'warpScale'),
+                    flowSmoothness: this.gl.getUniformLocation(this.program, 'flowSmoothness'),
                     grainIntensity: this.gl.getUniformLocation(this.program, 'grainIntensity'),
                     grainSize: this.gl.getUniformLocation(this.program, 'grainSize'),
                     chromaticAberration: this.gl.getUniformLocation(this.program, 'chromaticAberration'),
@@ -776,6 +819,7 @@
                 this.gl.uniform1f(this.uniforms.focusContrast, this.state.focusContrast);
                 this.gl.uniform1f(this.uniforms.warpStrength, this.state.warpStrength);
                 this.gl.uniform1f(this.uniforms.warpScale, this.state.warpScale);
+                this.gl.uniform1f(this.uniforms.flowSmoothness, this.state.flowSmoothness);
                 this.gl.uniform1f(this.uniforms.grainIntensity, this.state.grainIntensity);
                 this.gl.uniform1f(this.uniforms.grainSize, this.state.grainSize);
                 this.gl.uniform1f(this.uniforms.chromaticAberration, this.state.chromaticAberration);
@@ -887,54 +931,58 @@
             applyPreset(preset) {
                 const presets = {
                     softAurora: {
-                        // Ethereal & dreamy - minimal warp, soft diffusion
+                        // Ethereal & dreamy - ultra-smooth broad gestures
                         hardness: 0.05,
                         diffusion: 1.6,
                         hotspotGlow: 0.85,
-                        warpStrength: 0.3,
-                        warpScale: 0.9,
+                        warpStrength: 0.5,
+                        warpScale: 1.2,
+                        flowSmoothness: 0.9,
                         focusIntensity: 0.15,
                         focusContrast: 2.5,
-                        grainIntensity: 0.025,
+                        grainIntensity: 0,
                         grainSize: 0.8,
                         chromaticAberration: 0.002
                     },
                     flowingGlass: {
-                        // Balanced & iridescent - smooth translucent flow
+                        // Balanced & iridescent - smooth gestural flow
                         hardness: 0.2,
                         diffusion: 1.3,
                         hotspotGlow: 1.0,
-                        warpStrength: 0.6,
-                        warpScale: 1.1,
+                        warpStrength: 0.7,
+                        warpScale: 1.4,
+                        flowSmoothness: 0.75,
                         focusIntensity: 0.5,
                         focusContrast: 5.0,
-                        grainIntensity: 0.03,
+                        grainIntensity: 0,
                         grainSize: 1.0,
                         chromaticAberration: 0.004
                     },
                     liquidOptics: {
-                        // Dynamic & layered - high contrast, dramatic flow
+                        // Dynamic & layered - sweeping curves with depth
                         hardness: 0.35,
                         diffusion: 1.0,
                         hotspotGlow: 1.2,
-                        warpStrength: 0.8,
-                        warpScale: 0.8,
+                        warpStrength: 0.9,
+                        warpScale: 1.0,
+                        flowSmoothness: 0.65,
                         focusIntensity: 0.75,
                         focusContrast: 7.5,
-                        grainIntensity: 0.035,
+                        grainIntensity: 0,
                         grainSize: 1.2,
                         chromaticAberration: 0.005
                     },
                     ambientDepth: {
-                        // Atmospheric & volumetric - extreme depth of field
+                        // Atmospheric & volumetric - gentle broad movements
                         hardness: 0.08,
                         diffusion: 1.5,
                         hotspotGlow: 0.9,
-                        warpStrength: 0.4,
-                        warpScale: 1.3,
+                        warpStrength: 0.6,
+                        warpScale: 1.6,
+                        flowSmoothness: 0.85,
                         focusIntensity: 0.85,
                         focusContrast: 9.0,
-                        grainIntensity: 0.028,
+                        grainIntensity: 0,
                         grainSize: 0.9,
                         chromaticAberration: 0.006
                     }
@@ -998,6 +1046,7 @@
                         focusContrast: this.state.focusContrast,
                         warpStrength: this.state.warpStrength,
                         warpScale: this.state.warpScale,
+                        flowSmoothness: this.state.flowSmoothness,
                         grainIntensity: this.state.grainIntensity,
                         grainSize: this.state.grainSize,
                         chromaticAberration: this.state.chromaticAberration

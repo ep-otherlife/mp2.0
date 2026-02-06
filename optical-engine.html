@@ -185,19 +185,19 @@
             <div class="label mb-3">Domain Warping</div>
             
             <div class="mb-4">
-                <label class="label">Warp Strength</label>
+                <label class="label">Shape Movement</label>
                 <input type="range" class="slider" min="0" max="2" step="0.01" value="0.5" 
                        oninput="app.updateUniform('warpStrength', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Warp Scale</label>
-                <input type="range" class="slider" min="0.1" max="5" step="0.1" value="1.5" 
+                <label class="label">Shape Scale</label>
+                <input type="range" class="slider" min="0.5" max="2" step="0.05" value="1.0" 
                        oninput="app.updateUniform('warpScale', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Flow Smoothness</label>
+                <label class="label">Edge Smoothness</label>
                 <input type="range" class="slider" min="0" max="1" step="0.01" value="0.7" 
                        oninput="app.updateUniform('flowSmoothness', parseFloat(this.value))">
             </div>
@@ -408,66 +408,74 @@
                         return minDist;
                     }
                     
-                    // Smooth gestural flow - creates broad, sweeping curves
-                    // Controlled by flowSmoothness: 0 = more detailed, 1 = very smooth/gestural
-                    vec2 gesturalWarp(vec2 p, float strength, float scale, float smoothness) {
-                        // Lower base frequency for broader curves
-                        vec2 uv = p * scale * (0.3 + smoothness * 0.2);
-                        float t = time * 0.2;
-                        
-                        // Smoothness controls frequency - higher smoothness = lower frequencies
-                        float freqMod = 1.0 - smoothness * 0.6; // 1.0 to 0.4
-                        
-                        // Layer 1: Primary broad sweep (always present)
-                        float f1 = 0.7 * freqMod;
-                        uv.x += strength * 1.2 * sin(f1 * uv.y + t);
-                        uv.y += strength * 1.2 * cos(f1 * uv.x * 0.9 + t * 1.1);
-                        
-                        // Layer 2: Secondary modulation (reduced by smoothness)
-                        float amp2 = strength * (0.6 - smoothness * 0.3);
-                        float f2 = 1.2 * freqMod;
-                        uv.x += amp2 * sin(f2 * uv.y + t * 0.8);
-                        uv.y += amp2 * cos(f2 * uv.x * 0.85 + t * 0.9);
-                        
-                        // Layer 3: Tertiary detail (fades with smoothness)
-                        float amp3 = strength * (0.3 - smoothness * 0.25);
-                        float f3 = 1.8 * freqMod;
-                        uv.x += amp3 * sin(f3 * uv.y + t * 1.2);
-                        uv.y += amp3 * cos(f3 * uv.x * 0.8 + t * 1.1);
-                        
-                        // Layer 4: Fine detail (only visible at low smoothness)
-                        float amp4 = strength * max(0.0, 0.15 - smoothness * 0.2);
-                        float f4 = 2.5 * freqMod;
-                        uv.x += amp4 * sin(f4 * uv.y + t * 0.7);
-                        uv.y += amp4 * cos(f4 * uv.x * 0.75 + t * 0.8);
-                        
-                        return uv;
+                    // Subtle edge irregularity - adds organic feel without destroying form
+                    float edgeNoise(vec2 p, float scale) {
+                        float n = fbm(p * scale + time * 0.05, 2);
+                        return (n - 0.5) * 2.0; // -1 to 1
                     }
                     
-                    // Generate smooth flowing highlights
-                    float flowHighlight(vec2 p, float strength, float scale, float smoothness) {
-                        vec2 uv = p * scale * (0.4 + smoothness * 0.3);
-                        float t = time * 0.15;
+                    // Arc shape - creates clear curved forms like in reference
+                    // center: arc origin (can be off-screen for large sweeping curves)
+                    // radius: distance from center to arc edge
+                    // thickness: how thick the gradient band is
+                    // softness: edge softness (higher = softer gradient)
+                    float arcShape(vec2 p, vec2 center, float radius, float thickness, float softness, float irregularity) {
+                        // Add subtle irregularity to the radius
+                        float noise = edgeNoise(p, 2.0) * irregularity * 0.15;
+                        float adjustedRadius = radius + noise;
                         
-                        float freqMod = 1.0 - smoothness * 0.5;
+                        float dist = length(p - center);
                         
-                        // Broad, sweeping displacement
-                        uv.x += strength * sin(0.8 * freqMod * uv.y + t);
-                        uv.y += strength * cos(0.7 * freqMod * uv.x + t * 1.1);
+                        // Smooth gradient from arc edge
+                        float inner = smoothstep(adjustedRadius - thickness * softness, adjustedRadius, dist);
+                        float outer = 1.0 - smoothstep(adjustedRadius, adjustedRadius + thickness * softness * 0.3, dist);
                         
-                        // Secondary layer (fades with smoothness)
-                        float amp2 = strength * (0.5 - smoothness * 0.3);
-                        uv.x += amp2 * sin(1.3 * freqMod * uv.y + t * 0.9);
-                        uv.y += amp2 * cos(1.2 * freqMod * uv.x + t * 0.85);
+                        return inner * outer;
+                    }
+                    
+                    // Horizon gradient - like the left reference image
+                    // Creates a large curved horizon with smooth gradient above it
+                    float horizonShape(vec2 p, vec2 center, float radius, float softness, float irregularity) {
+                        float noise = edgeNoise(p, 1.5) * irregularity * 0.1;
+                        float adjustedRadius = radius + noise;
                         
-                        // Create broad flowing bands of light
-                        float bands = abs(sin(t * 0.3 - uv.y * 0.7 - uv.x * 0.6));
+                        float dist = length(p - center);
                         
-                        // Softer highlight calculation
-                        float width = 0.15 + smoothness * 0.1; // Wider bands with more smoothness
-                        float highlight = width / (bands + 0.25);
+                        // Gradient that fades from the horizon upward
+                        float gradient = smoothstep(adjustedRadius - softness * 0.5, adjustedRadius + softness * 2.0, dist);
                         
-                        return clamp(highlight * 0.8, 0.0, 1.0);
+                        return 1.0 - gradient;
+                    }
+                    
+                    // Parallel bands - like the right reference image
+                    // Creates multiple stacked arc bands with consistent spacing
+                    float parallelBands(vec2 p, vec2 center, float baseRadius, float bandWidth, float bandSpacing, float softness, float irregularity) {
+                        float totalBands = 0.0;
+                        
+                        // Create 6 parallel bands
+                        for(float i = 0.0; i < 6.0; i++) {
+                            float r = baseRadius + i * bandSpacing;
+                            float band = arcShape(p, center, r, bandWidth, softness, irregularity);
+                            // Fade outer bands slightly
+                            float fade = 1.0 - i * 0.12;
+                            totalBands += band * fade;
+                        }
+                        
+                        return totalBands;
+                    }
+                    
+                    // Soft glow shape - like the middle reference image  
+                    // Creates a soft radial glow with subtle curved edge
+                    float softGlow(vec2 p, vec2 center, float radius, float falloff, float irregularity) {
+                        float noise = edgeNoise(p, 1.0) * irregularity * 0.08;
+                        
+                        float dist = length(p - center);
+                        float adjustedDist = dist + noise;
+                        
+                        // Soft exponential falloff
+                        float glow = exp(-adjustedDist * adjustedDist / (radius * radius * falloff));
+                        
+                        return glow;
                     }
                     
                     // Calculate light emitter with smooth volumetric falloff
@@ -626,54 +634,82 @@
                         return finalColor;
                     }
                     
-                    // Calculate light intensity at a position (for chromatic aberration)
+                    // Calculate light intensity using geometric shapes (like reference images)
                     float calculateLightIntensity(vec2 p, vec2 offset) {
-                        vec2 samplePos = p + offset;
+                        // Scale coordinates by warpScale (now "Shape Scale")
+                        vec2 samplePos = (p + offset) / warpScale;
                         
-                        // Apply smooth gestural flow
-                        vec2 wp = gesturalWarp(samplePos, warpStrength, warpScale, flowSmoothness);
+                        // Movement speed controlled by warpStrength (now "Shape Movement")
+                        float moveSpeed = warpStrength * 0.15;
+                        float t = time * moveSpeed;
                         
-                        // Generate flow-based highlights
-                        float flowGlow = flowHighlight(samplePos, warpStrength * 0.8, warpScale, flowSmoothness);
+                        // Irregularity amount (inverse of smoothness)
+                        float irregularity = 1.0 - flowSmoothness;
                         
-                        // Calculate focus map
-                        float focusMap = fbm(samplePos * 1.2 + time * 0.03, 2);
-                        focusMap = smoothstep(0.2, 0.8, focusMap);
-                        focusMap = pow(focusMap, focusContrast);
-                        focusMap = mix(0.15, 1.0, focusMap * focusIntensity + (1.0 - focusIntensity));
+                        // === PRIMARY SHAPE: Large horizon arc (like left reference) ===
+                        // Origin below and to the side, creating a sweeping horizon
+                        float angle1 = t * 0.5;
+                        vec2 horizonCenter = vec2(
+                            cos(angle1) * 0.3 - 0.5,
+                            -1.8 + sin(t * 0.3) * 0.3
+                        );
+                        float horizonRadius = 1.6 + sin(t * 0.6) * 0.2;
+                        float horizon = horizonShape(samplePos, horizonCenter, horizonRadius, diffusion * 0.8, irregularity);
                         
-                        // Create focus modulation
-                        float sharpness = mix(0.05, 1.0, focusMap);
-                        float blur = mix(3.0, 0.3, focusMap);
-                        float modHardness = hardness * sharpness;
-                        float modDiffusion = diffusion * blur;
+                        // === SECONDARY SHAPE: Parallel bands (like right reference) ===
+                        // Origin offset to create diagonal bands across frame
+                        float angle2 = t * 0.4 + 2.1;
+                        vec2 bandCenter = vec2(
+                            1.5 + cos(angle2) * 0.4,
+                            -1.2 + sin(t * 0.45) * 0.3
+                        );
+                        float bandRadius = 1.0 + sin(t * 0.55) * 0.15;
+                        float bandWidth = 0.08 + hardness * 0.15;
+                        float bandSpacing = 0.18 + diffusion * 0.08;
+                        float bands = parallelBands(samplePos, bandCenter, bandRadius, bandWidth, bandSpacing, diffusion * 0.5, irregularity);
                         
-                        // Four light emitters
-                        vec2 emitter1Pos = vec2(cos(time * 0.25) * 0.35, sin(time * 0.25) * 0.35);
-                        vec2 emitter2Pos = vec2(cos(time * 0.18 + 3.14159) * 0.45, sin(time * 0.18 + 3.14159) * 0.25);
-                        vec2 emitter3Pos = vec2(cos(time * 0.22 + 1.57) * 0.25, sin(time * 0.22 + 1.57) * 0.45);
-                        vec2 emitter4Pos = mouse * 2.0 - 1.0;
+                        // === TERTIARY SHAPE: Soft central glow (like middle reference) ===
+                        vec2 glowCenter = vec2(
+                            sin(t * 0.8) * 0.4,
+                            cos(t * 0.65) * 0.3
+                        );
+                        // Mouse influences glow position
+                        glowCenter = mix(glowCenter, mouse * 2.0 - 1.0, 0.4);
+                        float glow = softGlow(samplePos, glowCenter, 0.8 + diffusion * 0.3, 0.5 + diffusion * 0.3, irregularity);
                         
-                        // Calculate emitters
-                        float light1 = calcEmitter(wp, emitter1Pos, modHardness * 0.8, modDiffusion * 1.2);
-                        float light2 = calcEmitter(wp, emitter2Pos, modHardness * 1.2, modDiffusion * 0.9);
-                        float light3 = calcEmitter(wp, emitter3Pos, modHardness, modDiffusion * 1.5);
-                        float light4 = calcEmitter(wp, emitter4Pos, modHardness * 1.5, modDiffusion * 0.7);
+                        // === FOURTH SHAPE: Secondary horizon from opposite side ===
+                        float angle3 = t * 0.45 + 3.5;
+                        vec2 horizon2Center = vec2(
+                            1.8 + cos(angle3) * 0.2,
+                            1.5 + sin(t * 0.38) * 0.2
+                        );
+                        float horizon2 = horizonShape(samplePos, horizon2Center, 1.4 + sin(t * 0.5) * 0.2, diffusion * 0.6, irregularity);
                         
-                        // Layer lights with reduced intensity
+                        // === COMBINE SHAPES ===
                         float totalLight = 0.0;
-                        totalLight += light1 * 0.6;
-                        totalLight += light2 * 0.55;
-                        totalLight += light3 * 0.5;
-                        totalLight += light4 * 0.55;
                         
-                        // Add ambient and flow highlights (reduced)
-                        totalLight += fbm(wp * 0.8 + time * 0.02, 2) * 0.02;
-                        totalLight += flowGlow * 0.08;
-                        totalLight *= hotspotGlow;
-                        totalLight = smoothstep(0.0, 1.0, totalLight * 0.75);
+                        // Primary horizon - strongest
+                        totalLight += horizon * 0.7 * hotspotGlow;
                         
-                        return totalLight;
+                        // Parallel bands - creates the layered stripe effect
+                        totalLight += bands * 0.5 * hotspotGlow;
+                        
+                        // Central glow - soft ambient fill
+                        totalLight += glow * 0.4 * hotspotGlow;
+                        
+                        // Secondary horizon - subtle depth
+                        totalLight += horizon2 * 0.3 * hotspotGlow;
+                        
+                        // Apply focus/depth variation
+                        float focusMap = fbm(samplePos * 0.8 + t * 0.15, 2);
+                        focusMap = smoothstep(0.3, 0.7, focusMap);
+                        float focusMod = mix(0.7, 1.0, focusMap * focusIntensity);
+                        totalLight *= focusMod;
+                        
+                        // Soft overall contrast
+                        totalLight = smoothstep(0.0, 1.0, totalLight * (0.8 + hardness * 0.4));
+                        
+                        return clamp(totalLight, 0.0, 1.5);
                     }
                     
                     void main() {
@@ -931,26 +967,40 @@
             applyPreset(preset) {
                 const presets = {
                     softAurora: {
-                        // Ethereal & dreamy - ultra-smooth broad gestures
-                        hardness: 0.05,
-                        diffusion: 1.6,
-                        hotspotGlow: 0.85,
-                        warpStrength: 0.5,
-                        warpScale: 1.2,
-                        flowSmoothness: 0.9,
-                        focusIntensity: 0.15,
-                        focusContrast: 2.5,
+                        // Soft horizon with gentle bands - like sunrise
+                        hardness: 0.1,
+                        diffusion: 1.4,
+                        hotspotGlow: 0.9,
+                        warpStrength: 0.4,
+                        warpScale: 1.0,
+                        flowSmoothness: 0.85,
+                        focusIntensity: 0.2,
+                        focusContrast: 2.0,
                         grainIntensity: 0,
                         grainSize: 0.8,
                         chromaticAberration: 0.002
                     },
                     flowingGlass: {
-                        // Balanced & iridescent - smooth gestural flow
-                        hardness: 0.2,
-                        diffusion: 1.3,
+                        // Clear parallel bands with soft edges
+                        hardness: 0.3,
+                        diffusion: 1.1,
                         hotspotGlow: 1.0,
-                        warpStrength: 0.7,
-                        warpScale: 1.4,
+                        warpStrength: 0.5,
+                        warpScale: 0.9,
+                        flowSmoothness: 0.8,
+                        focusIntensity: 0.4,
+                        focusContrast: 4.0,
+                        grainIntensity: 0,
+                        grainSize: 1.0,
+                        chromaticAberration: 0.003
+                    },
+                    liquidOptics: {
+                        // Defined bands with stronger contrast
+                        hardness: 0.5,
+                        diffusion: 0.9,
+                        hotspotGlow: 1.1,
+                        warpStrength: 0.6,
+                        warpScale: 0.85,
                         flowSmoothness: 0.75,
                         focusIntensity: 0.5,
                         focusContrast: 5.0,
@@ -958,33 +1008,19 @@
                         grainSize: 1.0,
                         chromaticAberration: 0.004
                     },
-                    liquidOptics: {
-                        // Dynamic & layered - sweeping curves with depth
-                        hardness: 0.35,
-                        diffusion: 1.0,
-                        hotspotGlow: 1.2,
-                        warpStrength: 0.9,
-                        warpScale: 1.0,
-                        flowSmoothness: 0.65,
-                        focusIntensity: 0.75,
-                        focusContrast: 7.5,
-                        grainIntensity: 0,
-                        grainSize: 1.2,
-                        chromaticAberration: 0.005
-                    },
                     ambientDepth: {
-                        // Atmospheric & volumetric - gentle broad movements
-                        hardness: 0.08,
-                        diffusion: 1.5,
-                        hotspotGlow: 0.9,
-                        warpStrength: 0.6,
-                        warpScale: 1.6,
-                        flowSmoothness: 0.85,
-                        focusIntensity: 0.85,
-                        focusContrast: 9.0,
+                        // Large sweeping arcs with atmospheric feel
+                        hardness: 0.15,
+                        diffusion: 1.3,
+                        hotspotGlow: 0.85,
+                        warpStrength: 0.35,
+                        warpScale: 1.2,
+                        flowSmoothness: 0.9,
+                        focusIntensity: 0.6,
+                        focusContrast: 3.0,
                         grainIntensity: 0,
                         grainSize: 0.9,
-                        chromaticAberration: 0.006
+                        chromaticAberration: 0.002
                     }
                 };
                 

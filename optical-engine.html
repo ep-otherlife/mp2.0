@@ -777,58 +777,74 @@
                         return finalColor;
                     }
                     
-                    // Calculate light intensity at a position (for chromatic aberration)
+                    // Core iterative flow field (inspired by reference shader)
+                    // Generates flowing forms through feedback, NOT round emitters
                     float calculateLightIntensity(vec2 p, vec2 offset) {
-                        vec2 samplePos = p + offset;
+                        vec2 uv = (p + offset) * warpScale;
                         
-                        // Apply iterative domain distortion (uses curveFrequency, curveAmplitude, curveComplexity)
-                        vec2 wp = iterativeWarp(samplePos, warpScale, 0.0);
+                        // Mouse influence on flow field
+                        vec2 mousePos = mouse * 2.0 - 1.0;
+                        uv += mousePos * emitterRadius * 0.3;
                         
-                        // Generate flow-based highlights (uses highlightIntensity, highlightWidth, highlightFrequency)
-                        float flowGlow = flowHighlight(samplePos, warpScale);
+                        // Iterative feedback loop - this creates the flowing forms
+                        // d and a accumulate and feed back into each other
+                        float d = -time * emitterSpeed * 0.25;
+                        float a = 0.0;
                         
-                        // Calculate focus map (uses focusScale)
-                        float focusMap = fbm(samplePos * focusScale + time * 0.03, 2);
-                        focusMap = smoothstep(0.2, 0.8, focusMap);
-                        focusMap = pow(focusMap, focusContrast);
-                        focusMap = mix(0.15, 1.0, focusMap * focusIntensity + (1.0 - focusIntensity));
+                        // Number of effective iterations controlled by complexity
+                        // 8 iterations total, amplitude decreases with complexity
+                        for (float i = 0.0; i < 8.0; i++) {
+                            // Weight falls off for higher iterations based on complexity
+                            float weight = 1.0 - (i / 8.0) * (1.0 - curveComplexity);
+                            
+                            a += weight * curveAmplitude * cos(i * curveFrequency - d - a * uv.x);
+                            d += weight * curveAmplitude * sin(uv.y * i * curveFrequency + a);
+                        }
                         
-                        // Create focus modulation
-                        float sharpness = mix(0.05, 1.0, focusMap);
-                        float blur = mix(3.0, 0.3, focusMap);
-                        float modHardness = hardness * sharpness;
-                        float modDiffusion = diffusion * blur;
+                        d += time * emitterSpeed * 0.25;
                         
-                        // Four light emitters (uses emitterSpeed, emitterRadius)
-                        float speed = emitterSpeed * 0.5;
-                        float radius = emitterRadius;
-                        vec2 emitter1Pos = vec2(cos(time * speed) * radius, sin(time * speed) * radius);
-                        vec2 emitter2Pos = vec2(cos(time * speed * 0.72 + 3.14159) * radius * 1.2, sin(time * speed * 0.72 + 3.14159) * radius * 0.7);
-                        vec2 emitter3Pos = vec2(cos(time * speed * 0.88 + 1.57) * radius * 0.7, sin(time * speed * 0.88 + 1.57) * radius * 1.2);
-                        vec2 emitter4Pos = mouse * 2.0 - 1.0;
+                        // Generate flowing scalar field from accumulated values
+                        // This creates smooth, full-frame flowing bands
+                        float flow1 = cos(uv.x * d * highlightFrequency) * 0.5 + 0.5;
+                        float flow2 = cos(uv.y * a * highlightFrequency) * 0.5 + 0.5;
+                        float flow3 = cos((a + d) * highlightFrequency) * 0.5 + 0.5;
                         
-                        // Calculate emitters
-                        float light1 = calcEmitter(wp, emitter1Pos, modHardness * 0.8, modDiffusion * 1.2);
-                        float light2 = calcEmitter(wp, emitter2Pos, modHardness * 1.2, modDiffusion * 0.9);
-                        float light3 = calcEmitter(wp, emitter3Pos, modHardness, modDiffusion * 1.5);
-                        float light4 = calcEmitter(wp, emitter4Pos, modHardness * 1.5, modDiffusion * 0.7);
-                        
-                        // Layer lights using uniform weights
+                        // Combine flows with light layer weights
                         float totalLight = 0.0;
-                        totalLight += light1 * lightLayer1;
-                        totalLight += light2 * lightLayer2;
-                        totalLight += light3 * lightLayer3;
-                        totalLight += light4 * lightLayer4;
+                        totalLight += flow1 * lightLayer1;
+                        totalLight += flow2 * lightLayer2;
+                        totalLight += flow3 * lightLayer3;
                         
-                        // Add ambient and flow highlights
-                        totalLight += fbm(wp * 0.8 + time * 0.02, 2) * ambientLight;
-                        totalLight += flowGlow;
+                        // Add highlight bands (thin bright lines along flow)
+                        float bands = cos(d * (1.0 + highlightWidth * 2.0)) * 0.5 + 0.5;
+                        bands = pow(bands, 1.0 + (1.0 - highlightWidth) * 4.0);
+                        totalLight += bands * highlightIntensity * lightLayer4;
+                        
+                        // Normalize and apply controls
+                        totalLight = totalLight / (lightLayer1 + lightLayer2 + lightLayer3 + lightLayer4 * highlightIntensity + 0.001);
+                        
+                        // Apply ambient fill
+                        totalLight = mix(ambientLight * 5.0, totalLight, 1.0 - ambientLight * 2.0);
+                        
+                        // Apply hardness (sharpens the transitions)
+                        totalLight = pow(totalLight, 1.0 + hardness * 3.0);
+                        
+                        // Apply diffusion (softens/spreads)
+                        totalLight = smoothstep(0.5 - diffusion * 0.35, 0.5 + diffusion * 0.35, totalLight);
+                        
+                        // Apply hotspot glow
                         totalLight *= hotspotGlow;
                         
-                        // Apply contrast curve
-                        totalLight = smoothstep(0.0, 1.0, totalLight * (0.6 + contrastCurve * 0.4));
+                        // Apply focus variation
+                        float focusMap = fbm(uv * focusScale * 0.5 + time * 0.02, 2);
+                        focusMap = smoothstep(0.3, 0.7, focusMap);
+                        float focusMod = mix(1.0, focusMap, focusIntensity * 0.5);
+                        totalLight *= mix(0.5, 1.5, focusMod);
                         
-                        return totalLight;
+                        // Apply contrast curve
+                        totalLight = pow(clamp(totalLight, 0.0, 1.0), contrastCurve);
+                        
+                        return clamp(totalLight, 0.0, 1.5);
                     }
                     
                     void main() {
@@ -1158,168 +1174,66 @@
             },
             
             applyPreset(preset) {
-                // DEFAULTS that produce flowing curves (from state init):
-                // freq 0.5, amp 1.2, complex 0.5, scale 1.0, highlight 0.3,
-                // hlWidth 0.8, hlFreq 0.5, hardness 0.15, diffusion 1.4,
-                // glow 1.0, speed 0.5, radius 0.4, ambient 0.02,
-                // layers 0.6/0.55/0.5/0.55, focus 0.65, fContrast 6.5,
-                // fScale 1.2, CA 0.003, contrast 1.0
                 const presets = {
+                    // Soft flowing, broad curves, gentle
                     softVeil: {
-                        curveFrequency: 0.45,
-                        curveAmplitude: 1.0,
-                        curveComplexity: 0.4,
-                        warpScale: 1.1,
-                        highlightIntensity: 0.25,
-                        highlightWidth: 0.9,
-                        highlightFrequency: 0.45,
-                        hardness: 0.1,
-                        diffusion: 1.5,
-                        hotspotGlow: 0.9,
-                        emitterSpeed: 0.4,
-                        emitterRadius: 0.45,
-                        ambientLight: 0.02,
-                        lightLayer1: 0.55,
-                        lightLayer2: 0.5,
-                        lightLayer3: 0.45,
-                        lightLayer4: 0.5,
-                        focusIntensity: 0.5,
-                        focusContrast: 5.0,
-                        focusScale: 1.4,
-                        grainIntensity: 0,
-                        grainSize: 1.0,
-                        chromaticAberration: 0.003,
-                        contrastCurve: 1.0
+                        curveFrequency: 0.4, curveAmplitude: 0.8, curveComplexity: 0.4, warpScale: 1.1,
+                        highlightIntensity: 0.3, highlightWidth: 0.7, highlightFrequency: 0.4,
+                        hardness: 0.1, diffusion: 1.5, hotspotGlow: 0.9,
+                        emitterSpeed: 0.3, emitterRadius: 0.3,
+                        ambientLight: 0.02, lightLayer1: 0.6, lightLayer2: 0.5, lightLayer3: 0.45, lightLayer4: 0.5,
+                        focusIntensity: 0.3, focusContrast: 4.0, focusScale: 1.4,
+                        grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.003, contrastCurve: 0.9
                     },
+                    // Sharper defined bands
                     sharpArc: {
-                        curveFrequency: 0.55,
-                        curveAmplitude: 1.4,
-                        curveComplexity: 0.45,
-                        warpScale: 0.9,
-                        highlightIntensity: 0.4,
-                        highlightWidth: 0.6,
-                        highlightFrequency: 0.55,
-                        hardness: 0.25,
-                        diffusion: 1.2,
-                        hotspotGlow: 1.1,
-                        emitterSpeed: 0.55,
-                        emitterRadius: 0.4,
-                        ambientLight: 0.015,
-                        lightLayer1: 0.65,
-                        lightLayer2: 0.6,
-                        lightLayer3: 0.5,
-                        lightLayer4: 0.55,
-                        focusIntensity: 0.7,
-                        focusContrast: 7.0,
-                        focusScale: 1.1,
-                        grainIntensity: 0,
-                        grainSize: 1.0,
-                        chromaticAberration: 0.004,
-                        contrastCurve: 1.05
+                        curveFrequency: 0.6, curveAmplitude: 1.2, curveComplexity: 0.5, warpScale: 0.9,
+                        highlightIntensity: 0.5, highlightWidth: 0.4, highlightFrequency: 0.55,
+                        hardness: 0.3, diffusion: 1.1, hotspotGlow: 1.1,
+                        emitterSpeed: 0.5, emitterRadius: 0.3,
+                        ambientLight: 0.01, lightLayer1: 0.65, lightLayer2: 0.6, lightLayer3: 0.5, lightLayer4: 0.6,
+                        focusIntensity: 0.5, focusContrast: 6.0, focusScale: 1.0,
+                        grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.005, contrastCurve: 1.1
                     },
+                    // Complex overlapping forms
                     deepFolds: {
-                        curveFrequency: 0.55,
-                        curveAmplitude: 1.3,
-                        curveComplexity: 0.65,
-                        warpScale: 0.95,
-                        highlightIntensity: 0.35,
-                        highlightWidth: 0.7,
-                        highlightFrequency: 0.55,
-                        hardness: 0.15,
-                        diffusion: 1.4,
-                        hotspotGlow: 1.0,
-                        emitterSpeed: 0.5,
-                        emitterRadius: 0.4,
-                        ambientLight: 0.02,
-                        lightLayer1: 0.6,
-                        lightLayer2: 0.6,
-                        lightLayer3: 0.55,
-                        lightLayer4: 0.55,
-                        focusIntensity: 0.65,
-                        focusContrast: 6.5,
-                        focusScale: 1.2,
-                        grainIntensity: 0,
-                        grainSize: 1.0,
-                        chromaticAberration: 0.004,
-                        contrastCurve: 1.0
+                        curveFrequency: 0.5, curveAmplitude: 1.0, curveComplexity: 0.8, warpScale: 1.0,
+                        highlightIntensity: 0.4, highlightWidth: 0.55, highlightFrequency: 0.5,
+                        hardness: 0.15, diffusion: 1.3, hotspotGlow: 1.0,
+                        emitterSpeed: 0.4, emitterRadius: 0.35,
+                        ambientLight: 0.015, lightLayer1: 0.6, lightLayer2: 0.6, lightLayer3: 0.55, lightLayer4: 0.55,
+                        focusIntensity: 0.4, focusContrast: 5.0, focusScale: 1.2,
+                        grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.004, contrastCurve: 1.0
                     },
+                    // Minimal, clean single sweep
                     singleStroke: {
-                        curveFrequency: 0.4,
-                        curveAmplitude: 1.5,
-                        curveComplexity: 0.25,
-                        warpScale: 0.9,
-                        highlightIntensity: 0.35,
-                        highlightWidth: 0.6,
-                        highlightFrequency: 0.4,
-                        hardness: 0.2,
-                        diffusion: 1.3,
-                        hotspotGlow: 1.05,
-                        emitterSpeed: 0.4,
-                        emitterRadius: 0.45,
-                        ambientLight: 0.015,
-                        lightLayer1: 0.7,
-                        lightLayer2: 0.45,
-                        lightLayer3: 0.4,
-                        lightLayer4: 0.45,
-                        focusIntensity: 0.6,
-                        focusContrast: 7.5,
-                        focusScale: 1.0,
-                        grainIntensity: 0,
-                        grainSize: 1.0,
-                        chromaticAberration: 0.003,
-                        contrastCurve: 1.05
+                        curveFrequency: 0.35, curveAmplitude: 1.3, curveComplexity: 0.2, warpScale: 0.85,
+                        highlightIntensity: 0.45, highlightWidth: 0.35, highlightFrequency: 0.4,
+                        hardness: 0.25, diffusion: 1.2, hotspotGlow: 1.05,
+                        emitterSpeed: 0.35, emitterRadius: 0.3,
+                        ambientLight: 0.01, lightLayer1: 0.7, lightLayer2: 0.4, lightLayer3: 0.35, lightLayer4: 0.5,
+                        focusIntensity: 0.35, focusContrast: 6.5, focusScale: 1.0,
+                        grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.003, contrastCurve: 1.05
                     },
+                    // Bold dramatic movement
                     dramaticSweep: {
-                        curveFrequency: 0.5,
-                        curveAmplitude: 1.6,
-                        curveComplexity: 0.5,
-                        warpScale: 0.85,
-                        highlightIntensity: 0.4,
-                        highlightWidth: 0.6,
-                        highlightFrequency: 0.5,
-                        hardness: 0.2,
-                        diffusion: 1.3,
-                        hotspotGlow: 1.15,
-                        emitterSpeed: 0.6,
-                        emitterRadius: 0.4,
-                        ambientLight: 0.015,
-                        lightLayer1: 0.65,
-                        lightLayer2: 0.6,
-                        lightLayer3: 0.55,
-                        lightLayer4: 0.6,
-                        focusIntensity: 0.7,
-                        focusContrast: 7.0,
-                        focusScale: 1.1,
-                        grainIntensity: 0,
-                        grainSize: 1.0,
-                        chromaticAberration: 0.005,
-                        contrastCurve: 1.05
+                        curveFrequency: 0.55, curveAmplitude: 1.5, curveComplexity: 0.55, warpScale: 0.85,
+                        highlightIntensity: 0.55, highlightWidth: 0.45, highlightFrequency: 0.5,
+                        hardness: 0.25, diffusion: 1.2, hotspotGlow: 1.15,
+                        emitterSpeed: 0.6, emitterRadius: 0.35,
+                        ambientLight: 0.01, lightLayer1: 0.65, lightLayer2: 0.6, lightLayer3: 0.55, lightLayer4: 0.6,
+                        focusIntensity: 0.45, focusContrast: 5.5, focusScale: 1.1,
+                        grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.006, contrastCurve: 1.1
                     },
+                    // Softer ambient, wider bands
                     ambientWash: {
-                        curveFrequency: 0.5,
-                        curveAmplitude: 1.1,
-                        curveComplexity: 0.55,
-                        warpScale: 1.05,
-                        highlightIntensity: 0.3,
-                        highlightWidth: 0.85,
-                        highlightFrequency: 0.5,
-                        hardness: 0.12,
-                        diffusion: 1.5,
-                        hotspotGlow: 0.95,
-                        emitterSpeed: 0.45,
-                        emitterRadius: 0.45,
-                        ambientLight: 0.02,
-                        lightLayer1: 0.6,
-                        lightLayer2: 0.55,
-                        lightLayer3: 0.5,
-                        lightLayer4: 0.5,
-                        focusIntensity: 0.6,
-                        focusContrast: 6.0,
-                        focusScale: 1.3,
-                        grainIntensity: 0,
-                        grainSize: 1.0,
-                        chromaticAberration: 0.003,
-                        contrastCurve: 1.0
+                        curveFrequency: 0.45, curveAmplitude: 0.9, curveComplexity: 0.5, warpScale: 1.05,
+                        highlightIntensity: 0.25, highlightWidth: 0.8, highlightFrequency: 0.45,
+                        hardness: 0.08, diffusion: 1.5, hotspotGlow: 0.9,
+                        emitterSpeed: 0.3, emitterRadius: 0.35,
+                        ambientLight: 0.02, lightLayer1: 0.55, lightLayer2: 0.55, lightLayer3: 0.5, lightLayer4: 0.5,
+                        focusIntensity: 0.3, focusContrast: 4.0, focusScale: 1.4,
+                        grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.003, contrastCurve: 0.9
                     }
                 };
                 

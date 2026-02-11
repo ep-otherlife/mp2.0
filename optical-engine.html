@@ -110,8 +110,17 @@
             </div>
         </div>
         
-        <!-- Randomize & Save -->
+        <!-- Visual Presets -->
         <div class="mb-6">
+            <div class="label mb-3">Visual Presets</div>
+            <div class="grid grid-cols-2 gap-2 mb-3">
+                <button class="btn" onclick="app.applyPreset('softVeil')">Soft Veil</button>
+                <button class="btn" onclick="app.applyPreset('sharpArc')">Sharp Arc</button>
+                <button class="btn" onclick="app.applyPreset('deepFolds')">Deep Folds</button>
+                <button class="btn" onclick="app.applyPreset('singleStroke')">Single Stroke</button>
+                <button class="btn" onclick="app.applyPreset('dramaticSweep')">Dramatic Sweep</button>
+                <button class="btn" onclick="app.applyPreset('ambientWash')">Ambient Wash</button>
+            </div>
             <div class="grid grid-cols-2 gap-2">
                 <button class="btn btn-primary" onclick="app.randomize()">🎲 Randomize</button>
                 <button class="btn btn-primary" onclick="app.saveCustomPreset()">💾 Save Preset</button>
@@ -1146,6 +1155,176 @@
                 };
                 this.state.colors = themes[theme];
                 this.renderColorPalette();
+            },
+            
+            applyPreset(preset) {
+                const presets = {
+                    // Like image 1 & 5 - soft flowing purple, multiple forms, atmospheric
+                    softVeil: {
+                        curveFrequency: 0.4,
+                        curveAmplitude: 1.3,
+                        curveComplexity: 0.45,
+                        warpScale: 0.9,
+                        highlightIntensity: 0.25,
+                        highlightWidth: 0.9,
+                        highlightFrequency: 0.4,
+                        hardness: 0.12,
+                        diffusion: 1.6,
+                        hotspotGlow: 1.0,
+                        emitterSpeed: 0.4,
+                        emitterRadius: 0.45,
+                        ambientLight: 0.008,
+                        lightLayer1: 0.65,
+                        lightLayer2: 0.55,
+                        lightLayer3: 0.5,
+                        lightLayer4: 0.5,
+                        focusIntensity: 0.4,
+                        focusContrast: 4.0,
+                        focusScale: 1.2,
+                        grainIntensity: 0,
+                        grainSize: 1.0,
+                        chromaticAberration: 0.002,
+                        contrastCurve: 1.1
+                    },
+                    // Like image 2 & 6 - sharp diagonal band, bright defined edge
+                    sharpArc: {
+                        curveFrequency: 0.35,
+                        curveAmplitude: 1.8,
+                        curveComplexity: 0.3,
+                        warpScale: 0.7,
+                        highlightIntensity: 0.5,
+                        highlightWidth: 0.35,
+                        highlightFrequency: 0.45,
+                        hardness: 0.45,
+                        diffusion: 0.8,
+                        hotspotGlow: 1.3,
+                        emitterSpeed: 0.55,
+                        emitterRadius: 0.35,
+                        ambientLight: 0.003,
+                        lightLayer1: 0.85,
+                        lightLayer2: 0.7,
+                        lightLayer3: 0.55,
+                        lightLayer4: 0.6,
+                        focusIntensity: 0.6,
+                        focusContrast: 7.0,
+                        focusScale: 0.9,
+                        grainIntensity: 0,
+                        grainSize: 1.0,
+                        chromaticAberration: 0.004,
+                        contrastCurve: 1.4
+                    },
+                    // Like image 1 - multiple overlapping soft curves, complex layering
+                    deepFolds: {
+                        curveFrequency: 0.5,
+                        curveAmplitude: 1.5,
+                        curveComplexity: 0.6,
+                        warpScale: 0.85,
+                        highlightIntensity: 0.35,
+                        highlightWidth: 0.6,
+                        highlightFrequency: 0.5,
+                        hardness: 0.25,
+                        diffusion: 1.2,
+                        hotspotGlow: 1.15,
+                        emitterSpeed: 0.5,
+                        emitterRadius: 0.4,
+                        ambientLight: 0.005,
+                        lightLayer1: 0.75,
+                        lightLayer2: 0.7,
+                        lightLayer3: 0.6,
+                        lightLayer4: 0.65,
+                        focusIntensity: 0.55,
+                        focusContrast: 5.5,
+                        focusScale: 1.0,
+                        grainIntensity: 0,
+                        grainSize: 1.0,
+                        chromaticAberration: 0.003,
+                        contrastCurve: 1.25
+                    },
+                    // Like image 4 - single clean sweeping arc, minimal, elegant
+                    singleStroke: {
+                        curveFrequency: 0.25,
+                        curveAmplitude: 2.0,
+                        curveComplexity: 0.15,
+                        warpScale: 0.65,
+                        highlightIntensity: 0.45,
+                        highlightWidth: 0.3,
+                        highlightFrequency: 0.3,
+                        hardness: 0.5,
+                        diffusion: 0.7,
+                        hotspotGlow: 1.35,
+                        emitterSpeed: 0.35,
+                        emitterRadius: 0.5,
+                        ambientLight: 0.002,
+                        lightLayer1: 0.9,
+                        lightLayer2: 0.4,
+                        lightLayer3: 0.3,
+                        lightLayer4: 0.35,
+                        focusIntensity: 0.3,
+                        focusContrast: 8.0,
+                        focusScale: 0.8,
+                        grainIntensity: 0,
+                        grainSize: 1.0,
+                        chromaticAberration: 0.003,
+                        contrastCurve: 1.5
+                    },
+                    // Like image 3 - bold sweeping arc, high brightness, dramatic
+                    dramaticSweep: {
+                        curveFrequency: 0.3,
+                        curveAmplitude: 2.2,
+                        curveComplexity: 0.35,
+                        warpScale: 0.75,
+                        highlightIntensity: 0.55,
+                        highlightWidth: 0.45,
+                        highlightFrequency: 0.4,
+                        hardness: 0.4,
+                        diffusion: 0.9,
+                        hotspotGlow: 1.4,
+                        emitterSpeed: 0.6,
+                        emitterRadius: 0.4,
+                        ambientLight: 0.003,
+                        lightLayer1: 0.85,
+                        lightLayer2: 0.75,
+                        lightLayer3: 0.6,
+                        lightLayer4: 0.65,
+                        focusIntensity: 0.5,
+                        focusContrast: 6.5,
+                        focusScale: 0.9,
+                        grainIntensity: 0,
+                        grainSize: 1.0,
+                        chromaticAberration: 0.005,
+                        contrastCurve: 1.35
+                    },
+                    // Like image 5 - softer, more forms visible, ambient glow around edges
+                    ambientWash: {
+                        curveFrequency: 0.45,
+                        curveAmplitude: 1.1,
+                        curveComplexity: 0.5,
+                        warpScale: 1.0,
+                        highlightIntensity: 0.2,
+                        highlightWidth: 1.0,
+                        highlightFrequency: 0.45,
+                        hardness: 0.18,
+                        diffusion: 1.4,
+                        hotspotGlow: 1.05,
+                        emitterSpeed: 0.45,
+                        emitterRadius: 0.45,
+                        ambientLight: 0.01,
+                        lightLayer1: 0.6,
+                        lightLayer2: 0.6,
+                        lightLayer3: 0.55,
+                        lightLayer4: 0.55,
+                        focusIntensity: 0.45,
+                        focusContrast: 4.5,
+                        focusScale: 1.3,
+                        grainIntensity: 0,
+                        grainSize: 1.0,
+                        chromaticAberration: 0.002,
+                        contrastCurve: 1.15
+                    }
+                };
+                
+                Object.assign(this.state, presets[preset]);
+                this.updateSliders();
             },
             
             // Randomize all parameters within sensible ranges

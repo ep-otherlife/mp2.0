@@ -100,19 +100,16 @@
     <div class="control-panel fixed top-4 right-4 w-80 p-6 rounded-lg max-h-[90vh] overflow-y-auto">
         <h1 class="text-white text-xl font-bold mb-6">Optical Engine</h1>
         
-        <!-- Brand Themes -->
+        <!-- ===== PRESETS & THEMES ===== -->
         <div class="mb-6">
             <div class="label mb-3">Brand Themes</div>
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-3 gap-2 mb-4">
                 <button class="btn btn-primary" onclick="app.applyTheme('consumer')">Consumer</button>
                 <button class="btn btn-primary" onclick="app.applyTheme('partner')">Partner</button>
                 <button class="btn btn-primary" onclick="app.applyTheme('stablecoins')">Stablecoins</button>
             </div>
-        </div>
-        
-        <!-- Visual Presets -->
-        <div class="mb-6">
-            <div class="label mb-3">Visual Presets</div>
+            
+            <div class="label mb-3">Presets</div>
             <div class="grid grid-cols-2 gap-2 mb-3">
                 <button class="btn" onclick="app.applyPreset('softVeil')">Soft Veil</button>
                 <button class="btn" onclick="app.applyPreset('sharpArc')">Sharp Arc</button>
@@ -135,9 +132,9 @@
             <button class="btn w-full" onclick="document.getElementById('presetImport').click()">📥 Import Preset</button>
         </div>
         
-        <!-- Color Palette -->
+        <!-- ===== COLOR PALETTE ===== -->
         <div class="mb-6">
-            <div class="label mb-3">Color Palette</div>
+            <div class="label mb-3" style="color: #903DD9;">Color Palette</div>
             <div id="colorPalette" class="flex flex-wrap gap-2 mb-3"></div>
             <div class="flex gap-2 mb-2">
                 <button class="btn flex-1" onclick="app.addColor()">+ Add Color</button>
@@ -152,61 +149,102 @@
             </div>
         </div>
         
-        <!-- ===== CURVE SHAPE ===== -->
+        <!-- ===== FLOW FIELD ===== -->
         <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Curve Shape</div>
+            <div class="label mb-3" style="color: #903DD9;">Flow Field</div>
             
             <div class="mb-4">
-                <label class="label">Curve Frequency <span class="text-gray-500">(width of curves)</span></label>
+                <label class="label">Frequency <span class="text-gray-500">(iteration frequency)</span></label>
                 <input type="range" class="slider" min="0.1" max="2" step="0.05" value="0.5" 
                        oninput="app.updateUniform('curveFrequency', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Curve Amplitude <span class="text-gray-500">(distortion amount)</span></label>
+                <label class="label">Amplitude <span class="text-gray-500">(iteration strength)</span></label>
                 <input type="range" class="slider" min="0" max="3" step="0.05" value="1.2" 
                        oninput="app.updateUniform('curveAmplitude', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Curve Complexity <span class="text-gray-500">(layer detail)</span></label>
+                <label class="label">Complexity <span class="text-gray-500">(iteration depth)</span></label>
                 <input type="range" class="slider" min="0" max="1" step="0.05" value="0.5" 
                        oninput="app.updateUniform('curveComplexity', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Warp Scale <span class="text-gray-500">(overall size)</span></label>
+                <label class="label">Scale <span class="text-gray-500">(zoom level)</span></label>
                 <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.0" 
                        oninput="app.updateUniform('warpScale', parseFloat(this.value))">
             </div>
-        </div>
-        
-        <!-- ===== FLOW HIGHLIGHTS ===== -->
-        <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Flow Highlights</div>
             
             <div class="mb-4">
-                <label class="label">Highlight Intensity</label>
+                <label class="label">Flow Speed <span class="text-gray-500">(evolution rate)</span></label>
+                <input type="range" class="slider" min="0" max="2" step="0.05" value="0.5" 
+                       oninput="app.updateUniform('emitterSpeed', parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <!-- ===== BANDS & HIGHLIGHTS ===== -->
+        <div class="mb-6">
+            <div class="label mb-3" style="color: #903DD9;">Bands & Highlights</div>
+            
+            <div class="mb-4">
+                <label class="label">Band Intensity <span class="text-gray-500">(brightness of bands)</span></label>
                 <input type="range" class="slider" min="0" max="1" step="0.01" value="0.3" 
                        oninput="app.updateUniform('highlightIntensity', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Highlight Width <span class="text-gray-500">(band thickness)</span></label>
+                <label class="label">Band Width <span class="text-gray-500">(thickness)</span></label>
                 <input type="range" class="slider" min="0.1" max="2" step="0.05" value="0.8" 
                        oninput="app.updateUniform('highlightWidth', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Highlight Frequency <span class="text-gray-500">(band spacing)</span></label>
+                <label class="label">Band Frequency <span class="text-gray-500">(spacing)</span></label>
                 <input type="range" class="slider" min="0.1" max="2" step="0.05" value="0.5" 
                        oninput="app.updateUniform('highlightFrequency', parseFloat(this.value))">
             </div>
         </div>
         
-        <!-- ===== LIGHT EMITTERS ===== -->
+        <!-- ===== LAYER MIXING ===== -->
         <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Light Emitters</div>
+            <div class="label mb-3" style="color: #903DD9;">Layer Mixing</div>
+            
+            <div class="mb-4">
+                <label class="label">Horizontal Flow <span class="text-gray-500">(X-axis pattern)</span></label>
+                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.6" 
+                       oninput="app.updateUniform('lightLayer1', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Vertical Flow <span class="text-gray-500">(Y-axis pattern)</span></label>
+                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.55" 
+                       oninput="app.updateUniform('lightLayer2', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Cross Flow <span class="text-gray-500">(combined pattern)</span></label>
+                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.5" 
+                       oninput="app.updateUniform('lightLayer3', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Band Layer <span class="text-gray-500">(highlight bands)</span></label>
+                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.55" 
+                       oninput="app.updateUniform('lightLayer4', parseFloat(this.value))">
+            </div>
+            
+            <div class="mb-4">
+                <label class="label">Ambient Fill <span class="text-gray-500">(base brightness)</span></label>
+                <input type="range" class="slider" min="0" max="0.2" step="0.005" value="0.02" 
+                       oninput="app.updateUniform('ambientLight', parseFloat(this.value))">
+            </div>
+        </div>
+        
+        <!-- ===== TONE & SHAPING ===== -->
+        <div class="mb-6">
+            <div class="label mb-3" style="color: #903DD9;">Tone & Shaping</div>
             
             <div class="mb-4">
                 <label class="label">Hardness <span class="text-gray-500">(edge sharpness)</span></label>
@@ -215,62 +253,21 @@
             </div>
             
             <div class="mb-4">
-                <label class="label">Diffusion <span class="text-gray-500">(spread distance)</span></label>
+                <label class="label">Diffusion <span class="text-gray-500">(softness range)</span></label>
                 <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.4" 
                        oninput="app.updateUniform('diffusion', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Hotspot Glow <span class="text-gray-500">(brightness)</span></label>
+                <label class="label">Brightness <span class="text-gray-500">(output level)</span></label>
                 <input type="range" class="slider" min="0" max="2" step="0.01" value="1.0" 
                        oninput="app.updateUniform('hotspotGlow', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Emitter Speed <span class="text-gray-500">(orbit velocity)</span></label>
-                <input type="range" class="slider" min="0" max="2" step="0.05" value="0.5" 
-                       oninput="app.updateUniform('emitterSpeed', parseFloat(this.value))">
-            </div>
-            
-            <div class="mb-4">
-                <label class="label">Emitter Radius <span class="text-gray-500">(orbit size)</span></label>
-                <input type="range" class="slider" min="0.1" max="1" step="0.05" value="0.4" 
-                       oninput="app.updateUniform('emitterRadius', parseFloat(this.value))">
-            </div>
-        </div>
-        
-        <!-- ===== LIGHT MIXING ===== -->
-        <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Light Mixing</div>
-            
-            <div class="mb-4">
-                <label class="label">Ambient Light <span class="text-gray-500">(base fill)</span></label>
-                <input type="range" class="slider" min="0" max="0.2" step="0.005" value="0.02" 
-                       oninput="app.updateUniform('ambientLight', parseFloat(this.value))">
-            </div>
-            
-            <div class="mb-4">
-                <label class="label">Light Layer 1 <span class="text-gray-500">(primary)</span></label>
-                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.6" 
-                       oninput="app.updateUniform('lightLayer1', parseFloat(this.value))">
-            </div>
-            
-            <div class="mb-4">
-                <label class="label">Light Layer 2 <span class="text-gray-500">(secondary)</span></label>
-                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.55" 
-                       oninput="app.updateUniform('lightLayer2', parseFloat(this.value))">
-            </div>
-            
-            <div class="mb-4">
-                <label class="label">Light Layer 3 <span class="text-gray-500">(tertiary)</span></label>
-                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.5" 
-                       oninput="app.updateUniform('lightLayer3', parseFloat(this.value))">
-            </div>
-            
-            <div class="mb-4">
-                <label class="label">Light Layer 4 <span class="text-gray-500">(mouse)</span></label>
-                <input type="range" class="slider" min="0" max="1" step="0.05" value="0.55" 
-                       oninput="app.updateUniform('lightLayer4', parseFloat(this.value))">
+                <label class="label">Contrast <span class="text-gray-500">(output curve)</span></label>
+                <input type="range" class="slider" min="0.5" max="2" step="0.05" value="1.0" 
+                       oninput="app.updateUniform('contrastCurve', parseFloat(this.value))">
             </div>
         </div>
         
@@ -279,19 +276,19 @@
             <div class="label mb-3" style="color: #903DD9;">Spatial Focus</div>
             
             <div class="mb-4">
-                <label class="label">Focus Intensity <span class="text-gray-500">(DOF strength)</span></label>
+                <label class="label">Intensity <span class="text-gray-500">(depth-of-field strength)</span></label>
                 <input type="range" class="slider" min="0" max="1" step="0.01" value="0.65" 
                        oninput="app.updateUniform('focusIntensity', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Focus Contrast <span class="text-gray-500">(sharp/blur transition)</span></label>
+                <label class="label">Contrast <span class="text-gray-500">(sharp/soft transition)</span></label>
                 <input type="range" class="slider" min="1" max="10" step="0.1" value="6.5" 
                        oninput="app.updateUniform('focusContrast', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Focus Scale <span class="text-gray-500">(noise size)</span></label>
+                <label class="label">Scale <span class="text-gray-500">(focus region size)</span></label>
                 <input type="range" class="slider" min="0.5" max="3" step="0.1" value="1.2" 
                        oninput="app.updateUniform('focusScale', parseFloat(this.value))">
             </div>
@@ -302,27 +299,21 @@
             <div class="label mb-3" style="color: #903DD9;">Post-Processing</div>
             
             <div class="mb-4">
-                <label class="label">Grain Intensity</label>
+                <label class="label">Film Grain <span class="text-gray-500">(intensity)</span></label>
                 <input type="range" class="slider" min="0" max="0.1" step="0.001" value="0" 
                        oninput="app.updateUniform('grainIntensity', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Grain Size</label>
+                <label class="label">Grain Size <span class="text-gray-500">(coarseness)</span></label>
                 <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.0" 
                        oninput="app.updateUniform('grainSize', parseFloat(this.value))">
             </div>
             
             <div class="mb-4">
-                <label class="label">Chromatic Aberration</label>
+                <label class="label">Chromatic Aberration <span class="text-gray-500">(RGB split)</span></label>
                 <input type="range" class="slider" min="0" max="0.02" step="0.0005" value="0.003" 
                        oninput="app.updateUniform('chromaticAberration', parseFloat(this.value))">
-            </div>
-            
-            <div class="mb-4">
-                <label class="label">Contrast Curve <span class="text-gray-500">(output contrast)</span></label>
-                <input type="range" class="slider" min="0.5" max="2" step="0.05" value="1.0" 
-                       oninput="app.updateUniform('contrastCurve', parseFloat(this.value))">
             </div>
         </div>
         
@@ -331,13 +322,13 @@
             <div class="label mb-3" style="color: #903DD9;">Animation</div>
             
             <div class="mb-4">
-                <label class="label">Animation Speed</label>
+                <label class="label">Time Speed <span class="text-gray-500">(global animation rate)</span></label>
                 <input type="range" class="slider" min="0" max="2" step="0.01" value="0.3" 
                        oninput="app.updateUniform('animSpeed', parseFloat(this.value))">
             </div>
         </div>
         
-        <!-- Export -->
+        <!-- ===== EXPORT ===== -->
         <div class="mb-6">
             <div class="label mb-3" style="color: #903DD9;">Export</div>
             <button class="btn btn-primary w-full mb-3" onclick="app.export4K()">📷 Export 4K PNG</button>
@@ -401,7 +392,6 @@
                 diffusion: 1.4,
                 hotspotGlow: 1.0,
                 emitterSpeed: 0.5,
-                emitterRadius: 0.4,
                 // Light Mixing
                 ambientLight: 0.02,
                 lightLayer1: 0.6,
@@ -420,8 +410,6 @@
                 // Animation
                 animSpeed: 0.3,
                 // Internal
-                mouseX: 0.5,
-                mouseY: 0.5,
                 time: 0
             },
             
@@ -446,7 +434,6 @@
                 
                 this.setupGeometry();
                 this.renderColorPalette();
-                this.setupMouseTracking();
                 this.loadCustomPresets();
                 
                 // Set initial viewport
@@ -471,7 +458,6 @@
                     
                     uniform vec2 resolution;
                     uniform float time;
-                    uniform vec2 mouse;
                     
                     // Curve Shape
                     uniform float curveFrequency;
@@ -489,7 +475,6 @@
                     uniform float diffusion;
                     uniform float hotspotGlow;
                     uniform float emitterSpeed;
-                    uniform float emitterRadius;
                     
                     // Light Mixing
                     uniform float ambientLight;
@@ -619,23 +604,6 @@
                         float highlight = width / (bands + 0.2 + highlightWidth * 0.2);
                         
                         return clamp(highlight * highlightIntensity, 0.0, 1.0);
-                    }
-                    
-                    // Calculate light emitter with smooth volumetric falloff
-                    float calcEmitter(vec2 p, vec2 center, float hardness, float diffusion) {
-                        float dist = length(p - center);
-                        
-                        // Smooth volumetric falloff
-                        float edge = exp(-dist * (1.0 / diffusion));
-                        
-                        // Apply hardness with smooth curve
-                        float curve = 1.0 + hardness * 5.0;
-                        edge = pow(edge, curve);
-                        
-                        // Smooth the final result for silky gradients
-                        edge = smoothstep(0.0, 1.0, edge);
-                        
-                        return edge;
                     }
                     
                     // Subtle tonemapping that preserves color accuracy
@@ -782,10 +750,6 @@
                     float calculateLightIntensity(vec2 p, vec2 offset) {
                         vec2 uv = (p + offset) * warpScale;
                         
-                        // Mouse influence on flow field
-                        vec2 mousePos = mouse * 2.0 - 1.0;
-                        uv += mousePos * emitterRadius * 0.3;
-                        
                         // Iterative feedback loop - this creates the flowing forms
                         // d and a accumulate and feed back into each other
                         float d = -time * emitterSpeed * 0.25;
@@ -918,7 +882,6 @@
                 this.uniforms = {
                     resolution: this.gl.getUniformLocation(this.program, 'resolution'),
                     time: this.gl.getUniformLocation(this.program, 'time'),
-                    mouse: this.gl.getUniformLocation(this.program, 'mouse'),
                     // Curve Shape
                     curveFrequency: this.gl.getUniformLocation(this.program, 'curveFrequency'),
                     curveAmplitude: this.gl.getUniformLocation(this.program, 'curveAmplitude'),
@@ -933,7 +896,6 @@
                     diffusion: this.gl.getUniformLocation(this.program, 'diffusion'),
                     hotspotGlow: this.gl.getUniformLocation(this.program, 'hotspotGlow'),
                     emitterSpeed: this.gl.getUniformLocation(this.program, 'emitterSpeed'),
-                    emitterRadius: this.gl.getUniformLocation(this.program, 'emitterRadius'),
                     // Light Mixing
                     ambientLight: this.gl.getUniformLocation(this.program, 'ambientLight'),
                     lightLayer1: this.gl.getUniformLocation(this.program, 'lightLayer1'),
@@ -992,17 +954,9 @@
                 this.gl.vertexAttribPointer(position, 2, this.gl.FLOAT, false, 0, 0);
             },
             
-            setupMouseTracking() {
-                this.canvas.addEventListener('mousemove', (e) => {
-                    this.state.mouseX = e.clientX / window.innerWidth;
-                    this.state.mouseY = 1.0 - (e.clientY / window.innerHeight);
-                });
-            },
-            
             updateUniforms() {
                 this.gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
                 this.gl.uniform1f(this.uniforms.time, this.state.time);
-                this.gl.uniform2f(this.uniforms.mouse, this.state.mouseX, this.state.mouseY);
                 // Curve Shape
                 this.gl.uniform1f(this.uniforms.curveFrequency, this.state.curveFrequency);
                 this.gl.uniform1f(this.uniforms.curveAmplitude, this.state.curveAmplitude);
@@ -1017,7 +971,6 @@
                 this.gl.uniform1f(this.uniforms.diffusion, this.state.diffusion);
                 this.gl.uniform1f(this.uniforms.hotspotGlow, this.state.hotspotGlow);
                 this.gl.uniform1f(this.uniforms.emitterSpeed, this.state.emitterSpeed);
-                this.gl.uniform1f(this.uniforms.emitterRadius, this.state.emitterRadius);
                 // Light Mixing
                 this.gl.uniform1f(this.uniforms.ambientLight, this.state.ambientLight);
                 this.gl.uniform1f(this.uniforms.lightLayer1, this.state.lightLayer1);
@@ -1180,7 +1133,7 @@
                         curveFrequency: 0.4, curveAmplitude: 0.8, curveComplexity: 0.4, warpScale: 1.1,
                         highlightIntensity: 0.3, highlightWidth: 0.7, highlightFrequency: 0.4,
                         hardness: 0.1, diffusion: 1.5, hotspotGlow: 0.9,
-                        emitterSpeed: 0.3, emitterRadius: 0.3,
+                        emitterSpeed: 0.3,
                         ambientLight: 0.02, lightLayer1: 0.6, lightLayer2: 0.5, lightLayer3: 0.45, lightLayer4: 0.5,
                         focusIntensity: 0.3, focusContrast: 4.0, focusScale: 1.4,
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.003, contrastCurve: 0.9
@@ -1190,7 +1143,7 @@
                         curveFrequency: 0.6, curveAmplitude: 1.2, curveComplexity: 0.5, warpScale: 0.9,
                         highlightIntensity: 0.5, highlightWidth: 0.4, highlightFrequency: 0.55,
                         hardness: 0.3, diffusion: 1.1, hotspotGlow: 1.1,
-                        emitterSpeed: 0.5, emitterRadius: 0.3,
+                        emitterSpeed: 0.5,
                         ambientLight: 0.01, lightLayer1: 0.65, lightLayer2: 0.6, lightLayer3: 0.5, lightLayer4: 0.6,
                         focusIntensity: 0.5, focusContrast: 6.0, focusScale: 1.0,
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.005, contrastCurve: 1.1
@@ -1200,7 +1153,7 @@
                         curveFrequency: 0.5, curveAmplitude: 1.0, curveComplexity: 0.8, warpScale: 1.0,
                         highlightIntensity: 0.4, highlightWidth: 0.55, highlightFrequency: 0.5,
                         hardness: 0.15, diffusion: 1.3, hotspotGlow: 1.0,
-                        emitterSpeed: 0.4, emitterRadius: 0.35,
+                        emitterSpeed: 0.4,
                         ambientLight: 0.015, lightLayer1: 0.6, lightLayer2: 0.6, lightLayer3: 0.55, lightLayer4: 0.55,
                         focusIntensity: 0.4, focusContrast: 5.0, focusScale: 1.2,
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.004, contrastCurve: 1.0
@@ -1210,7 +1163,7 @@
                         curveFrequency: 0.35, curveAmplitude: 1.3, curveComplexity: 0.2, warpScale: 0.85,
                         highlightIntensity: 0.45, highlightWidth: 0.35, highlightFrequency: 0.4,
                         hardness: 0.25, diffusion: 1.2, hotspotGlow: 1.05,
-                        emitterSpeed: 0.35, emitterRadius: 0.3,
+                        emitterSpeed: 0.35,
                         ambientLight: 0.01, lightLayer1: 0.7, lightLayer2: 0.4, lightLayer3: 0.35, lightLayer4: 0.5,
                         focusIntensity: 0.35, focusContrast: 6.5, focusScale: 1.0,
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.003, contrastCurve: 1.05
@@ -1220,7 +1173,7 @@
                         curveFrequency: 0.55, curveAmplitude: 1.5, curveComplexity: 0.55, warpScale: 0.85,
                         highlightIntensity: 0.55, highlightWidth: 0.45, highlightFrequency: 0.5,
                         hardness: 0.25, diffusion: 1.2, hotspotGlow: 1.15,
-                        emitterSpeed: 0.6, emitterRadius: 0.35,
+                        emitterSpeed: 0.6,
                         ambientLight: 0.01, lightLayer1: 0.65, lightLayer2: 0.6, lightLayer3: 0.55, lightLayer4: 0.6,
                         focusIntensity: 0.45, focusContrast: 5.5, focusScale: 1.1,
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.006, contrastCurve: 1.1
@@ -1230,7 +1183,7 @@
                         curveFrequency: 0.45, curveAmplitude: 0.9, curveComplexity: 0.5, warpScale: 1.05,
                         highlightIntensity: 0.25, highlightWidth: 0.8, highlightFrequency: 0.45,
                         hardness: 0.08, diffusion: 1.5, hotspotGlow: 0.9,
-                        emitterSpeed: 0.3, emitterRadius: 0.35,
+                        emitterSpeed: 0.3,
                         ambientLight: 0.02, lightLayer1: 0.55, lightLayer2: 0.55, lightLayer3: 0.5, lightLayer4: 0.5,
                         focusIntensity: 0.3, focusContrast: 4.0, focusScale: 1.4,
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.003, contrastCurve: 0.9
@@ -1256,12 +1209,11 @@
                 this.state.highlightWidth = rand(0.3, 1.2);
                 this.state.highlightFrequency = rand(0.2, 0.8);
                 
-                // Light Emitters
+                // Tone & Shaping
                 this.state.hardness = rand(0.05, 0.5);
                 this.state.diffusion = rand(0.7, 2.0);
                 this.state.hotspotGlow = rand(0.7, 1.4);
                 this.state.emitterSpeed = rand(0.2, 0.8);
-                this.state.emitterRadius = rand(0.25, 0.6);
                 
                 // Light Mixing
                 this.state.ambientLight = rand(0.005, 0.04);
@@ -1459,13 +1411,12 @@
                         highlightIntensity: this.state.highlightIntensity,
                         highlightWidth: this.state.highlightWidth,
                         highlightFrequency: this.state.highlightFrequency,
-                        // Light Emitters
+                        // Tone & Shaping
                         hardness: this.state.hardness,
                         diffusion: this.state.diffusion,
                         hotspotGlow: this.state.hotspotGlow,
                         emitterSpeed: this.state.emitterSpeed,
-                        emitterRadius: this.state.emitterRadius,
-                        // Light Mixing
+                        // Layer Mixing
                         ambientLight: this.state.ambientLight,
                         lightLayer1: this.state.lightLayer1,
                         lightLayer2: this.state.lightLayer2,

@@ -91,6 +91,27 @@
         canvas {
             display: block;
         }
+        
+        .color-swatch {
+            cursor: grab;
+            transition: transform 0.15s, opacity 0.15s;
+            user-select: none;
+        }
+        
+        .color-swatch:active {
+            cursor: grabbing;
+        }
+        
+        .color-swatch.dragging {
+            opacity: 0.4;
+            transform: scale(0.9);
+        }
+        
+        .color-swatch.drag-over {
+            transform: scale(1.1);
+            outline: 2px solid rgba(255, 255, 255, 0.5);
+            outline-offset: 2px;
+        }
     </style>
 </head>
 <body>
@@ -1026,13 +1047,58 @@
                 } : {r: 0, g: 0, b: 0};
             },
             
+            dragSrcIndex: null,
+            
             renderColorPalette() {
                 const container = document.getElementById('colorPalette');
                 container.innerHTML = '';
                 
                 this.state.colors.forEach((color, index) => {
                     const wrapper = document.createElement('div');
-                    wrapper.className = 'flex items-center gap-2';
+                    wrapper.className = 'color-swatch flex items-center gap-2';
+                    wrapper.draggable = true;
+                    wrapper.dataset.index = index;
+                    
+                    // Drag events
+                    wrapper.addEventListener('dragstart', (e) => {
+                        this.dragSrcIndex = index;
+                        wrapper.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', index);
+                    });
+                    
+                    wrapper.addEventListener('dragend', () => {
+                        wrapper.classList.remove('dragging');
+                        container.querySelectorAll('.color-swatch').forEach(el => el.classList.remove('drag-over'));
+                    });
+                    
+                    wrapper.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        wrapper.classList.add('drag-over');
+                    });
+                    
+                    wrapper.addEventListener('dragleave', () => {
+                        wrapper.classList.remove('drag-over');
+                    });
+                    
+                    wrapper.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        wrapper.classList.remove('drag-over');
+                        const fromIndex = this.dragSrcIndex;
+                        const toIndex = index;
+                        if (fromIndex !== null && fromIndex !== toIndex) {
+                            const moved = this.state.colors.splice(fromIndex, 1)[0];
+                            this.state.colors.splice(toIndex, 0, moved);
+                            this.renderColorPalette();
+                        }
+                    });
+                    
+                    // Color index label
+                    const label = document.createElement('span');
+                    label.textContent = index + 1;
+                    label.style.cssText = 'font-size:10px; color:rgba(255,255,255,0.3); width:14px; text-align:center;';
+                    wrapper.appendChild(label);
                     
                     const input = document.createElement('input');
                     input.type = 'color';
@@ -1041,6 +1107,8 @@
                     input.onchange = (e) => {
                         this.state.colors[index] = e.target.value;
                     };
+                    // Prevent drag when interacting with color picker
+                    input.addEventListener('mousedown', (e) => e.stopPropagation());
                     
                     wrapper.appendChild(input);
                     
@@ -1049,7 +1117,7 @@
                         removeBtn.textContent = '×';
                         removeBtn.className = 'btn';
                         removeBtn.style.padding = '4px 8px';
-                        removeBtn.onclick = () => this.removeColor(index);
+                        removeBtn.onclick = (e) => { e.stopPropagation(); this.removeColor(index); };
                         wrapper.appendChild(removeBtn);
                     }
                     

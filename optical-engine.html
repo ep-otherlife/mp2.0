@@ -292,28 +292,6 @@
             </div>
         </div>
         
-        <!-- ===== DEPTH OF FIELD ===== -->
-        <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Depth of Field</div>
-            
-            <div class="mb-4">
-                <label class="label">Focal Distance <span class="text-gray-500">(which luma is in focus)</span></label>
-                <input type="range" class="slider" min="0" max="1" step="0.01" value="0.5" 
-                       oninput="app.updateUniform('dofFocalDist', parseFloat(this.value))">
-            </div>
-            
-            <div class="mb-4">
-                <label class="label">Depth Range <span class="text-gray-500">(in-focus zone width)</span></label>
-                <input type="range" class="slider" min="0" max="1" step="0.01" value="1.0" 
-                       oninput="app.updateUniform('dofRange', parseFloat(this.value))">
-            </div>
-            
-            <div class="mb-4">
-                <label class="label">Blur Amount <span class="text-gray-500">(out-of-focus blur)</span></label>
-                <input type="range" class="slider" min="0" max="1" step="0.01" value="0" 
-                       oninput="app.updateUniform('dofBlurAmount', parseFloat(this.value))">
-            </div>
-        </div>
         
         <!-- ===== POST-PROCESSING ===== -->
         <div class="mb-6">
@@ -419,10 +397,6 @@
                 lightLayer2: 0.55,
                 lightLayer3: 0.5,
                 lightLayer4: 0.55,
-                // Depth of Field
-                dofFocalDist: 0.5,
-                dofRange: 1.0,
-                dofBlurAmount: 0,
                 // Post-Processing
                 grainIntensity: 0,
                 grainSize: 1.0,
@@ -503,11 +477,6 @@
                     uniform float lightLayer2;
                     uniform float lightLayer3;
                     uniform float lightLayer4;
-                    
-                    // Depth of Field
-                    uniform float dofFocalDist;
-                    uniform float dofRange;
-                    uniform float dofBlurAmount;
                     
                     // Post-processing effects
                     uniform float grainIntensity;
@@ -826,11 +795,12 @@
                         return clamp(totalLight, 0.0, 1.5);
                     }
                     
-                    // Sample the flow field and return final color with CA
-                    vec3 sampleColor(vec2 p) {
+                    void main() {
+                        vec2 p = (gl_FragCoord.xy * 2.0 - resolution.xy) / min(resolution.x, resolution.y);
+                        
+                        // Chromatic aberration
                         float distFromCenter = length(p);
                         vec2 direction = (distFromCenter > 0.001) ? normalize(p) : vec2(0.0);
-                        
                         float caStrength = chromaticAberration * distFromCenter;
                         vec2 offsetR = direction * caStrength;
                         vec2 offsetG = vec2(0.0);
@@ -840,43 +810,7 @@
                         float lightG = calculateLightIntensity(p, offsetG);
                         float lightB = calculateLightIntensity(p, offsetB);
                         
-                        return vec3(lightToColor(lightR).r, lightToColor(lightG).g, lightToColor(lightB).b);
-                    }
-                    
-                    void main() {
-                        vec2 p = (gl_FragCoord.xy * 2.0 - resolution.xy) / min(resolution.x, resolution.y);
-                        
-                        // Sharp color at this pixel
-                        vec3 sharpColor = sampleColor(p);
-                        
-                        // Use center light intensity as depth (0 = dark/far, 1 = bright/near)
-                        float depth = calculateLightIntensity(p, vec2(0.0));
-                        
-                        // Circle of confusion: how far this pixel's depth is from the focal plane
-                        float depthDiff = abs(depth - dofFocalDist);
-                        float coc = clamp((depthDiff - dofRange * 0.5) / (1.0 - dofRange * 0.5 + 0.001), 0.0, 1.0);
-                        coc *= dofBlurAmount;
-                        
-                        // DOF blur via disc sampling (8 samples)
-                        vec3 finalColor = sharpColor;
-                        
-                        if (dofBlurAmount > 0.005) {
-                            float blurRadius = coc * 0.12;
-                            
-                            // 8-point disc pattern (evenly spaced on circle)
-                            vec3 blurred = sharpColor;
-                            blurred += sampleColor(p + vec2( 1.000,  0.000) * blurRadius);
-                            blurred += sampleColor(p + vec2( 0.707,  0.707) * blurRadius);
-                            blurred += sampleColor(p + vec2( 0.000,  1.000) * blurRadius);
-                            blurred += sampleColor(p + vec2(-0.707,  0.707) * blurRadius);
-                            blurred += sampleColor(p + vec2(-1.000,  0.000) * blurRadius);
-                            blurred += sampleColor(p + vec2(-0.707, -0.707) * blurRadius);
-                            blurred += sampleColor(p + vec2( 0.000, -1.000) * blurRadius);
-                            blurred += sampleColor(p + vec2( 0.707, -0.707) * blurRadius);
-                            blurred /= 9.0;
-                            
-                            finalColor = mix(sharpColor, blurred, coc);
-                        }
+                        vec3 finalColor = vec3(lightToColor(lightR).r, lightToColor(lightG).g, lightToColor(lightB).b);
                         
                         // Apply ACES tonemapping
                         finalColor = acesToneMapping(finalColor);
@@ -939,10 +873,6 @@
                     lightLayer2: this.gl.getUniformLocation(this.program, 'lightLayer2'),
                     lightLayer3: this.gl.getUniformLocation(this.program, 'lightLayer3'),
                     lightLayer4: this.gl.getUniformLocation(this.program, 'lightLayer4'),
-                    // Depth of Field
-                    dofFocalDist: this.gl.getUniformLocation(this.program, 'dofFocalDist'),
-                    dofRange: this.gl.getUniformLocation(this.program, 'dofRange'),
-                    dofBlurAmount: this.gl.getUniformLocation(this.program, 'dofBlurAmount'),
                     // Post-processing
                     grainIntensity: this.gl.getUniformLocation(this.program, 'grainIntensity'),
                     grainSize: this.gl.getUniformLocation(this.program, 'grainSize'),
@@ -1014,10 +944,6 @@
                 this.gl.uniform1f(this.uniforms.lightLayer2, this.state.lightLayer2);
                 this.gl.uniform1f(this.uniforms.lightLayer3, this.state.lightLayer3);
                 this.gl.uniform1f(this.uniforms.lightLayer4, this.state.lightLayer4);
-                // Depth of Field
-                this.gl.uniform1f(this.uniforms.dofFocalDist, this.state.dofFocalDist);
-                this.gl.uniform1f(this.uniforms.dofRange, this.state.dofRange);
-                this.gl.uniform1f(this.uniforms.dofBlurAmount, this.state.dofBlurAmount);
                 // Post-processing
                 this.gl.uniform1f(this.uniforms.grainIntensity, this.state.grainIntensity);
                 this.gl.uniform1f(this.uniforms.grainSize, this.state.grainSize);
@@ -1219,7 +1145,7 @@
                         hardness: 0.1, diffusion: 1.5, hotspotGlow: 0.9,
                         emitterSpeed: 0.3,
                         ambientLight: 0.02, lightLayer1: 0.6, lightLayer2: 0.5, lightLayer3: 0.45, lightLayer4: 0.5,
-                        dofFocalDist: 0.5, dofRange: 1.0, dofBlurAmount: 0,
+
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.003, contrastCurve: 0.9
                     },
                     // Sharper defined bands
@@ -1229,7 +1155,7 @@
                         hardness: 0.3, diffusion: 1.1, hotspotGlow: 1.1,
                         emitterSpeed: 0.5,
                         ambientLight: 0.01, lightLayer1: 0.65, lightLayer2: 0.6, lightLayer3: 0.5, lightLayer4: 0.6,
-                        dofFocalDist: 0.5, dofRange: 1.0, dofBlurAmount: 0,
+
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.005, contrastCurve: 1.1
                     },
                     // Complex overlapping forms
@@ -1239,7 +1165,7 @@
                         hardness: 0.15, diffusion: 1.3, hotspotGlow: 1.0,
                         emitterSpeed: 0.4,
                         ambientLight: 0.015, lightLayer1: 0.6, lightLayer2: 0.6, lightLayer3: 0.55, lightLayer4: 0.55,
-                        dofFocalDist: 0.5, dofRange: 1.0, dofBlurAmount: 0,
+
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.004, contrastCurve: 1.0
                     },
                     // Minimal, clean single sweep
@@ -1249,7 +1175,7 @@
                         hardness: 0.25, diffusion: 1.2, hotspotGlow: 1.05,
                         emitterSpeed: 0.35,
                         ambientLight: 0.01, lightLayer1: 0.7, lightLayer2: 0.4, lightLayer3: 0.35, lightLayer4: 0.5,
-                        dofFocalDist: 0.5, dofRange: 1.0, dofBlurAmount: 0,
+
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.003, contrastCurve: 1.05
                     },
                     // Bold dramatic movement
@@ -1259,7 +1185,7 @@
                         hardness: 0.25, diffusion: 1.2, hotspotGlow: 1.15,
                         emitterSpeed: 0.6,
                         ambientLight: 0.01, lightLayer1: 0.65, lightLayer2: 0.6, lightLayer3: 0.55, lightLayer4: 0.6,
-                        dofFocalDist: 0.5, dofRange: 1.0, dofBlurAmount: 0,
+
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.006, contrastCurve: 1.1
                     },
                     // Softer ambient, wider bands
@@ -1269,7 +1195,7 @@
                         hardness: 0.08, diffusion: 1.5, hotspotGlow: 0.9,
                         emitterSpeed: 0.3,
                         ambientLight: 0.02, lightLayer1: 0.55, lightLayer2: 0.55, lightLayer3: 0.5, lightLayer4: 0.5,
-                        dofFocalDist: 0.5, dofRange: 1.0, dofBlurAmount: 0,
+
                         grainIntensity: 0, grainSize: 1.0, chromaticAberration: 0.003, contrastCurve: 0.9
                     }
                 };
@@ -1306,10 +1232,6 @@
                 this.state.lightLayer3 = rand(0.3, 0.8);
                 this.state.lightLayer4 = rand(0.35, 0.8);
                 
-                // Depth of Field (keep off by default for randomize)
-                this.state.dofFocalDist = rand(0.2, 0.8);
-                this.state.dofRange = rand(0.3, 1.0);
-                this.state.dofBlurAmount = 0;
                 
                 // Post-processing (keep grain at 0, randomize others)
                 this.state.grainIntensity = 0;
@@ -1506,10 +1428,6 @@
                         lightLayer2: this.state.lightLayer2,
                         lightLayer3: this.state.lightLayer3,
                         lightLayer4: this.state.lightLayer4,
-                        // Depth of Field
-                        dofFocalDist: this.state.dofFocalDist,
-                        dofRange: this.state.dofRange,
-                        dofBlurAmount: this.state.dofBlurAmount,
                         // Post-processing
                         grainIntensity: this.state.grainIntensity,
                         grainSize: this.state.grainSize,

@@ -130,9 +130,16 @@
         <div class="mb-6">
             <div class="label mb-3">Color Palette</div>
             <div id="colorPalette" class="flex flex-wrap gap-2 mb-3"></div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 mb-2">
                 <button class="btn flex-1" onclick="app.addColor()">+ Add Color</button>
                 <button class="btn flex-1" onclick="app.shufflePalette()">Shuffle</button>
+            </div>
+            <div class="label mb-2">Highlight Accent</div>
+            <div class="flex gap-2">
+                <button id="toggleYellow" class="btn flex-1" style="border-color: #EFFF00; color: #EFFF00;" 
+                        onclick="app.toggleHighlight('#EFFF00')">Yellow</button>
+                <button id="toggleOrange" class="btn flex-1" style="border-color: #FF5E00; color: #FF5E00;" 
+                        onclick="app.toggleHighlight('#FF5E00')">Orange</button>
             </div>
         </div>
         
@@ -1070,6 +1077,7 @@
                     
                     container.appendChild(wrapper);
                 });
+                this.updateHighlightButtons();
             },
             
             addColor() {
@@ -1083,6 +1091,39 @@
                 if(this.state.colors.length > 2) {
                     this.state.colors.splice(index, 1);
                     this.renderColorPalette();
+                }
+            },
+            
+            toggleHighlight(hex) {
+                const index = this.state.colors.indexOf(hex);
+                const btn = hex === '#EFFF00' ? document.getElementById('toggleYellow') : document.getElementById('toggleOrange');
+                
+                if (index !== -1) {
+                    // Remove it
+                    this.state.colors.splice(index, 1);
+                    btn.style.background = '';
+                } else {
+                    // Add it before the last color (white) to sit in the highlights
+                    if (this.state.colors.length >= 10) {
+                        alert('Max 10 colors. Remove one first.');
+                        return;
+                    }
+                    const insertAt = Math.max(1, this.state.colors.length - 1);
+                    this.state.colors.splice(insertAt, 0, hex);
+                    btn.style.background = hex === '#EFFF00' ? 'rgba(239,255,0,0.2)' : 'rgba(255,94,0,0.2)';
+                }
+                this.renderColorPalette();
+            },
+            
+            // Update highlight toggle button states after palette changes
+            updateHighlightButtons() {
+                const yellowBtn = document.getElementById('toggleYellow');
+                const orangeBtn = document.getElementById('toggleOrange');
+                if (yellowBtn) {
+                    yellowBtn.style.background = this.state.colors.includes('#EFFF00') ? 'rgba(239,255,0,0.2)' : '';
+                }
+                if (orangeBtn) {
+                    orangeBtn.style.background = this.state.colors.includes('#FF5E00') ? 'rgba(255,94,0,0.2)' : '';
                 }
             },
             

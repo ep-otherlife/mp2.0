@@ -596,15 +596,9 @@
                         return clamp(highlight * highlightIntensity, 0.0, 1.0);
                     }
                     
-                    // Subtle tonemapping that preserves color accuracy
+                    // Color-accurate tonemapping: passthrough below 1.0, soft rolloff above
                     vec3 acesToneMapping(vec3 color) {
-                        // Gentle S-curve for contrast without oversaturation
-                        vec3 mapped = color / (color + vec3(0.3));
-                        
-                        // Recalibrate to reach pure white at 1.0
-                        mapped = mapped * 1.3;
-                        
-                        return clamp(mapped, 0.0, 1.0);
+                        return clamp(color, 0.0, 1.0);
                     }
                     
                     // Blue noise dithering (anti-banding)
@@ -724,12 +718,6 @@
                             else if(t < 7.0) finalColor = mix(colors[6], colors[7], t - 6.0);
                             else if(t < 8.0) finalColor = mix(colors[7], colors[8], t - 7.0);
                             else finalColor = mix(colors[8], colors[9], t - 8.0);
-                        }
-                        
-                        // Handle over-glow
-                        if(totalLight > 1.0) {
-                            float overGlow = (totalLight - 1.0) * 0.5;
-                            finalColor += vec3(overGlow);
                         }
                         
                         return finalColor;

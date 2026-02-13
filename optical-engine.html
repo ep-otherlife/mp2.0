@@ -222,15 +222,8 @@
             <h1 style="color: var(--text-strong); font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">Optical Engine</h1>
         </div>
         
-        <!-- Brand Themes & Presets -->
+        <!-- Presets -->
         <div class="px-5 py-4 section">
-            <div class="section-label mb-3">Brand Themes</div>
-            <div class="grid grid-cols-3 gap-1.5 mb-4">
-                <button class="btn btn-primary" onclick="app.applyTheme('consumer')">Consumer</button>
-                <button class="btn btn-primary" onclick="app.applyTheme('partner')">Partner</button>
-                <button class="btn btn-primary" onclick="app.applyTheme('stablecoins')">Stablecoins</button>
-            </div>
-            
             <div class="section-label mb-3">Presets</div>
             <div class="grid grid-cols-2 gap-1.5 mb-3">
                 <button class="btn" onclick="app.applyPreset('softVeil')">Soft Veil</button>
@@ -272,6 +265,14 @@
         <!-- Color Palette -->
         <div class="px-5 py-4 section">
             <div class="section-label mb-3">Color Palette</div>
+            
+            <div class="section-label mb-2" style="font-size: 10px;">Brand Themes</div>
+            <div class="grid grid-cols-3 gap-1.5 mb-4">
+                <button class="btn btn-primary" onclick="app.applyTheme('consumer')">Consumer</button>
+                <button class="btn btn-primary" onclick="app.applyTheme('partner')">Partner</button>
+                <button class="btn btn-primary" onclick="app.applyTheme('stablecoins')">Stablecoins</button>
+            </div>
+            
             <div id="colorPalette" class="flex flex-wrap gap-2 mb-3"></div>
             <div class="flex gap-1.5 mb-3">
                 <button class="btn flex-1" onclick="app.addColor()">+ Add</button>

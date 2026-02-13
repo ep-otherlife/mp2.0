@@ -62,25 +62,25 @@
         
         /* Section label */
         .section-label {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             color: var(--text-soft);
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.08em;
         }
         
         /* Param label */
         .param-label {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
             color: var(--text-sub);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .param-label .hint {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 400;
             color: var(--text-disabled);
         }
@@ -100,8 +100,8 @@
         
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background: var(--neutral-0);
             box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
@@ -118,8 +118,8 @@
         }
         
         .slider::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background: var(--neutral-0);
             box-shadow: 0 1px 3px rgba(0,0,0,0.5);
@@ -134,16 +134,16 @@
         
         /* Buttons – AlignUI ghost and filled variants */
         .btn {
-            padding: 7px 10px;
+            padding: 6px 10px;
             background: var(--bg-sub);
             border: 1px solid var(--stroke-soft);
             color: var(--text-sub);
             border-radius: 8px;
             cursor: pointer;
             font-family: inherit;
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 500;
-            line-height: 1.3;
+            line-height: 1.2;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -169,12 +169,13 @@
         
         /* Color input */
         .color-input {
-            width: 36px;
-            height: 36px;
+            width: 30px;
+            height: 30px;
             border: 2px solid var(--stroke-soft);
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             background: transparent;
+            padding: 0;
             transition: border-color 0.15s;
         }
         .color-input:hover { border-color: var(--stroke-sub); }
@@ -218,13 +219,13 @@
     <div class="control-panel fixed top-3 right-3 w-[340px] rounded-xl max-h-[94vh] overflow-y-auto">
         
         <!-- Header -->
-        <div class="px-5 pt-5 pb-4 section">
-            <h1 style="color: var(--text-strong); font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">Optical Engine</h1>
+        <div class="px-5 pt-4 pb-3 section">
+            <h1 style="color: var(--text-strong); font-size: 13px; font-weight: 600; letter-spacing: -0.01em;">Optical Engine</h1>
         </div>
         
         <!-- Presets -->
-        <div class="px-5 py-4 section">
-            <div class="section-label mb-3">Presets</div>
+        <div class="px-5 py-3 section">
+            <div class="section-label mb-2">Presets</div>
             <div class="grid grid-cols-2 gap-1.5 mb-3">
                 <button class="btn" onclick="app.applyPreset('softVeil')">Soft Veil</button>
                 <button class="btn" onclick="app.applyPreset('sharpArc')">Sharp Arc</button>
@@ -239,8 +240,8 @@
         </div>
         
         <!-- Saved Presets (always visible) -->
-        <div class="px-5 py-4 section" id="customPresetsSection">
-            <div class="section-label mb-3">Saved Presets</div>
+        <div class="px-5 py-3 section" id="customPresetsSection">
+            <div class="section-label mb-2">Saved Presets</div>
             <div id="customPresetsList" class="grid grid-cols-1 gap-0 mb-3"></div>
             
             <!-- Inline save form (toggled) -->
@@ -263,50 +264,44 @@
         </div>
         
         <!-- Color Palette -->
-        <div class="px-5 py-4 section">
-            <div class="section-label mb-3">Color Palette</div>
-            
-            <div class="section-label mb-2" style="font-size: 10px;">Brand Themes</div>
-            <div class="grid grid-cols-3 gap-1.5 mb-4">
+        <div class="px-5 py-3 section">
+            <div class="section-label mb-2">Color Palette</div>
+            <div class="grid grid-cols-3 gap-1.5 mb-2">
                 <button class="btn btn-primary" onclick="app.applyTheme('consumer')">Consumer</button>
                 <button class="btn btn-primary" onclick="app.applyTheme('partner')">Partner</button>
                 <button class="btn btn-primary" onclick="app.applyTheme('stablecoins')">Stablecoins</button>
             </div>
-            
-            <div id="colorPalette" class="flex flex-wrap gap-2 mb-3"></div>
-            <div class="flex gap-1.5 mb-3">
-                <button class="btn flex-1" onclick="app.addColor()">+ Add</button>
-                <button class="btn flex-1" onclick="app.shufflePalette()">Shuffle</button>
-            </div>
-            <div class="section-label mb-2" style="font-size: 10px;">Highlight Accent</div>
-            <div class="flex gap-1.5">
-                <button id="toggleYellow" class="btn flex-1" style="border-color: #EFFF00; color: #EFFF00;" 
+            <div id="colorPalette" class="flex flex-wrap gap-1.5 mb-2"></div>
+            <div class="grid grid-cols-4 gap-1.5">
+                <button class="btn" onclick="app.addColor()">+ Add</button>
+                <button class="btn" onclick="app.shufflePalette()">Shuffle</button>
+                <button id="toggleYellow" class="btn" style="border-color: #EFFF00; color: #EFFF00;" 
                         onclick="app.toggleHighlight('#EFFF00')">Highlighter</button>
-                <button id="toggleOrange" class="btn flex-1" style="border-color: #FF5E00; color: #FF5E00;" 
+                <button id="toggleOrange" class="btn" style="border-color: #FF5E00; color: #FF5E00;" 
                         onclick="app.toggleHighlight('#FF5E00')">Orange</button>
             </div>
         </div>
         
         <!-- Flow Field -->
-        <div class="px-5 py-4 section">
-            <div class="section-label mb-4">Flow Field</div>
+        <div class="px-5 py-3 section">
+            <div class="section-label mb-2">Flow Field</div>
             
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Frequency <span class="hint">iteration frequency</span></div>
                 <input type="range" class="slider" min="0.1" max="2" step="0.05" value="0.5" 
                        oninput="app.updateUniform('curveFrequency', parseFloat(this.value))">
             </div>
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Amplitude <span class="hint">iteration strength</span></div>
                 <input type="range" class="slider" min="0" max="3" step="0.05" value="1.2" 
                        oninput="app.updateUniform('curveAmplitude', parseFloat(this.value))">
             </div>
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Complexity <span class="hint">iteration depth</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.05" value="0.5" 
                        oninput="app.updateUniform('curveComplexity', parseFloat(this.value))">
             </div>
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Scale <span class="hint">zoom level</span></div>
                 <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.0" 
                        oninput="app.updateUniform('warpScale', parseFloat(this.value))">
@@ -319,15 +314,15 @@
         </div>
         
         <!-- Bands & Highlights -->
-        <div class="px-5 py-4 section">
-            <div class="section-label mb-4">Bands & Highlights</div>
+        <div class="px-5 py-3 section">
+            <div class="section-label mb-2">Bands & Highlights</div>
             
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Band Intensity <span class="hint">brightness</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.01" value="0.3" 
                        oninput="app.updateUniform('highlightIntensity', parseFloat(this.value))">
             </div>
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Band Width <span class="hint">thickness</span></div>
                 <input type="range" class="slider" min="0.1" max="2" step="0.05" value="0.8" 
                        oninput="app.updateUniform('highlightWidth', parseFloat(this.value))">
@@ -340,25 +335,25 @@
         </div>
         
         <!-- Layer Mixing -->
-        <div class="px-5 py-4 section">
-            <div class="section-label mb-4">Layer Mixing</div>
+        <div class="px-5 py-3 section">
+            <div class="section-label mb-2">Layer Mixing</div>
             
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Horizontal Flow <span class="hint">X-axis</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.05" value="0.6" 
                        oninput="app.updateUniform('lightLayer1', parseFloat(this.value))">
             </div>
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Vertical Flow <span class="hint">Y-axis</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.05" value="0.55" 
                        oninput="app.updateUniform('lightLayer2', parseFloat(this.value))">
             </div>
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Cross Flow <span class="hint">combined</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.05" value="0.5" 
                        oninput="app.updateUniform('lightLayer3', parseFloat(this.value))">
             </div>
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Band Layer <span class="hint">highlights</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.05" value="0.55" 
                        oninput="app.updateUniform('lightLayer4', parseFloat(this.value))">
@@ -371,20 +366,20 @@
         </div>
         
         <!-- Tone & Shaping -->
-        <div class="px-5 py-4 section">
-            <div class="section-label mb-4">Tone & Shaping</div>
+        <div class="px-5 py-3 section">
+            <div class="section-label mb-2">Tone & Shaping</div>
             
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Hardness <span class="hint">edge sharpness</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.01" value="0.15" 
                        oninput="app.updateUniform('hardness', parseFloat(this.value))">
             </div>
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Diffusion <span class="hint">softness range</span></div>
                 <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.4" 
                        oninput="app.updateUniform('diffusion', parseFloat(this.value))">
             </div>
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Brightness <span class="hint">output level</span></div>
                 <input type="range" class="slider" min="0" max="2" step="0.01" value="1.0" 
                        oninput="app.updateUniform('hotspotGlow', parseFloat(this.value))">
@@ -397,15 +392,15 @@
         </div>
         
         <!-- Post-Processing -->
-        <div class="px-5 py-4 section">
-            <div class="section-label mb-4">Post-Processing</div>
+        <div class="px-5 py-3 section">
+            <div class="section-label mb-2">Post-Processing</div>
             
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Film Grain <span class="hint">intensity</span></div>
                 <input type="range" class="slider" min="0" max="0.1" step="0.001" value="0" 
                        oninput="app.updateUniform('grainIntensity', parseFloat(this.value))">
             </div>
-            <div class="mb-4">
+            <div class="mb-2.5">
                 <div class="param-label">Grain Size <span class="hint">coarseness</span></div>
                 <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.0" 
                        oninput="app.updateUniform('grainSize', parseFloat(this.value))">
@@ -418,8 +413,8 @@
         </div>
         
         <!-- Animation -->
-        <div class="px-5 py-4 section">
-            <div class="section-label mb-4">Animation</div>
+        <div class="px-5 py-3 section">
+            <div class="section-label mb-2">Animation</div>
             <div>
                 <div class="param-label">Time Speed <span class="hint">global rate</span></div>
                 <input type="range" class="slider" min="0" max="2" step="0.01" value="0.3" 
@@ -429,7 +424,7 @@
         
         <!-- Export -->
         <div class="px-5 py-4">
-            <div class="section-label mb-3">Export</div>
+            <div class="section-label mb-2">Export</div>
             <button class="btn btn-primary w-full mb-3" onclick="app.export4K()">Export 4K PNG</button>
             
             <div class="flex gap-2 mb-2">
@@ -1084,7 +1079,7 @@
                 
                 this.state.colors.forEach((color, index) => {
                     const wrapper = document.createElement('div');
-                    wrapper.className = 'color-swatch flex items-center gap-2';
+                    wrapper.className = 'color-swatch flex items-center gap-1';
                     wrapper.draggable = true;
                     wrapper.dataset.index = index;
                     
@@ -1126,7 +1121,7 @@
                     // Color index label
                     const label = document.createElement('span');
                     label.textContent = index + 1;
-                    label.style.cssText = 'font-size:10px; color:rgba(255,255,255,0.3); width:14px; text-align:center;';
+                    label.style.cssText = 'font-size:9px; color:var(--text-disabled); width:10px; text-align:center; flex-shrink:0;';
                     wrapper.appendChild(label);
                     
                     const input = document.createElement('input');
@@ -1145,7 +1140,7 @@
                         const removeBtn = document.createElement('button');
                         removeBtn.textContent = '×';
                         removeBtn.className = 'btn';
-                        removeBtn.style.padding = '4px 8px';
+                        removeBtn.style.cssText = 'padding:2px 6px; font-size:11px; line-height:1; min-width:0;';
                         removeBtn.onclick = (e) => { e.stopPropagation(); this.removeColor(index); };
                         wrapper.appendChild(removeBtn);
                     }

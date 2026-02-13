@@ -5,133 +5,231 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoonPay Optical Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --neutral-0: #ffffff;
+            --neutral-50: #fafafa;
+            --neutral-100: #f5f5f5;
+            --neutral-200: #e5e5e5;
+            --neutral-300: #d4d4d4;
+            --neutral-400: #a3a3a3;
+            --neutral-500: #737373;
+            --neutral-600: #525252;
+            --neutral-700: #404040;
+            --neutral-800: #262626;
+            --neutral-900: #171717;
+            --neutral-950: #0a0a0a;
+            --primary-base: #903DD9;
+            --primary-alpha-16: rgba(144, 61, 217, 0.16);
+            --primary-alpha-10: rgba(144, 61, 217, 0.10);
+            --text-strong: #fafafa;
+            --text-sub: #a3a3a3;
+            --text-soft: #737373;
+            --text-disabled: #525252;
+            --bg-surface: #171717;
+            --bg-sub: #262626;
+            --stroke-soft: #262626;
+            --stroke-sub: #404040;
+        }
+        
         body {
             margin: 0;
             overflow: hidden;
-            background: #0a0a0a;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--neutral-950);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         
+        canvas { display: block; }
+        
+        /* Panel */
         .control-panel {
-            background: rgba(10, 10, 10, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
+            background: rgba(23, 23, 23, 0.92);
+            border: 1px solid var(--stroke-soft);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            scrollbar-width: thin;
+            scrollbar-color: var(--neutral-700) transparent;
+        }
+        .control-panel::-webkit-scrollbar { width: 4px; }
+        .control-panel::-webkit-scrollbar-track { background: transparent; }
+        .control-panel::-webkit-scrollbar-thumb { background: var(--neutral-700); border-radius: 2px; }
+        
+        /* Section divider */
+        .section { border-bottom: 1px solid var(--stroke-soft); }
+        
+        /* Section label */
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-soft);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
         
+        /* Param label */
+        .param-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-sub);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .param-label .hint {
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--text-disabled);
+        }
+        
+        /* Slider – AlignUI style: thin track, filled portion, round thumb */
         .slider {
             width: 100%;
             height: 4px;
-            border-radius: 2px;
-            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            background: var(--neutral-800);
             outline: none;
             -webkit-appearance: none;
+            cursor: pointer;
+            transition: background 0.15s;
         }
+        .slider:hover { background: var(--neutral-700); }
         
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
-            background: #ffffff;
+            background: var(--neutral-0);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
             cursor: pointer;
+            transition: transform 0.12s, box-shadow 0.12s;
+        }
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.6), 0 0 0 2px rgba(144, 61, 217, 0.3);
+        }
+        .slider::-webkit-slider-thumb:active {
+            transform: scale(1.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 0 0 3px rgba(144, 61, 217, 0.4);
         }
         
         .slider::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
-            background: #ffffff;
+            background: var(--neutral-0);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
             cursor: pointer;
             border: none;
         }
-        
-        .color-input {
-            width: 40px;
-            height: 40px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            cursor: pointer;
-            background: transparent;
+        .slider::-moz-range-track {
+            background: var(--neutral-800);
+            height: 4px;
+            border-radius: 9999px;
         }
         
+        /* Buttons – AlignUI ghost and filled variants */
         .btn {
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border-radius: 4px;
+            padding: 7px 14px;
+            background: var(--bg-sub);
+            border: 1px solid var(--stroke-soft);
+            color: var(--text-sub);
+            border-radius: 8px;
             cursor: pointer;
+            font-family: inherit;
             font-size: 12px;
-            transition: all 0.2s;
+            font-weight: 500;
+            line-height: 1.4;
+            transition: all 0.15s;
         }
-        
         .btn:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.2);
+            background: var(--neutral-700);
+            color: var(--text-strong);
+            border-color: var(--stroke-sub);
         }
+        .btn:active { transform: scale(0.97); }
         
         .btn-primary {
-            background: rgba(144, 61, 217, 0.2);
-            border-color: #903DD9;
+            background: var(--primary-alpha-16);
+            border-color: rgba(144, 61, 217, 0.35);
+            color: #BBA1FF;
         }
-        
         .btn-primary:hover {
-            background: rgba(144, 61, 217, 0.3);
+            background: rgba(144, 61, 217, 0.28);
+            border-color: var(--primary-base);
+            color: #D8C8FF;
         }
         
-        .label {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.6);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
+        /* Color input */
+        .color-input {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--stroke-soft);
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+            transition: border-color 0.15s;
         }
+        .color-input:hover { border-color: var(--stroke-sub); }
         
-        canvas {
-            display: block;
-        }
-        
+        /* Color drag & drop */
         .color-swatch {
             cursor: grab;
             transition: transform 0.15s, opacity 0.15s;
             user-select: none;
         }
-        
-        .color-swatch:active {
-            cursor: grabbing;
-        }
-        
-        .color-swatch.dragging {
-            opacity: 0.4;
-            transform: scale(0.9);
-        }
-        
+        .color-swatch:active { cursor: grabbing; }
+        .color-swatch.dragging { opacity: 0.35; transform: scale(0.92); }
         .color-swatch.drag-over {
-            transform: scale(1.1);
-            outline: 2px solid rgba(255, 255, 255, 0.5);
+            transform: scale(1.08);
+            outline: 2px solid var(--primary-base);
             outline-offset: 2px;
+            border-radius: 8px;
         }
+        
+        /* Number input / select */
+        .input-field {
+            width: 100%;
+            background: var(--bg-sub);
+            border: 1px solid var(--stroke-soft);
+            border-radius: 8px;
+            padding: 6px 10px;
+            color: var(--text-strong);
+            font-family: inherit;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .input-field:focus { border-color: var(--primary-base); }
+        .input-field option { background: var(--bg-surface); }
     </style>
 </head>
 <body>
     <canvas id="glCanvas"></canvas>
     
     <!-- Control Panel -->
-    <div class="control-panel fixed top-4 right-4 w-80 p-6 rounded-lg max-h-[90vh] overflow-y-auto">
-        <h1 class="text-white text-xl font-bold mb-6">Optical Engine</h1>
+    <div class="control-panel fixed top-3 right-3 w-[304px] rounded-xl max-h-[94vh] overflow-y-auto">
         
-        <!-- ===== PRESETS & THEMES ===== -->
-        <div class="mb-6">
-            <div class="label mb-3">Brand Themes</div>
-            <div class="grid grid-cols-3 gap-2 mb-4">
+        <!-- Header -->
+        <div class="px-5 pt-5 pb-4 section">
+            <h1 style="color: var(--text-strong); font-size: 15px; font-weight: 600; letter-spacing: -0.01em;">Optical Engine</h1>
+        </div>
+        
+        <!-- Brand Themes & Presets -->
+        <div class="px-5 py-4 section">
+            <div class="section-label mb-3">Brand Themes</div>
+            <div class="grid grid-cols-3 gap-1.5 mb-4">
                 <button class="btn btn-primary" onclick="app.applyTheme('consumer')">Consumer</button>
                 <button class="btn btn-primary" onclick="app.applyTheme('partner')">Partner</button>
                 <button class="btn btn-primary" onclick="app.applyTheme('stablecoins')">Stablecoins</button>
             </div>
             
-            <div class="label mb-3">Presets</div>
-            <div class="grid grid-cols-2 gap-2 mb-3">
+            <div class="section-label mb-3">Presets</div>
+            <div class="grid grid-cols-2 gap-1.5 mb-3">
                 <button class="btn" onclick="app.applyPreset('softVeil')">Soft Veil</button>
                 <button class="btn" onclick="app.applyPreset('sharpArc')">Sharp Arc</button>
                 <button class="btn" onclick="app.applyPreset('deepFolds')">Deep Folds</button>
@@ -139,30 +237,30 @@
                 <button class="btn" onclick="app.applyPreset('dramaticSweep')">Dramatic Sweep</button>
                 <button class="btn" onclick="app.applyPreset('ambientWash')">Ambient Wash</button>
             </div>
-            <div class="grid grid-cols-2 gap-2">
-                <button class="btn btn-primary" onclick="app.randomize()">🎲 Randomize</button>
-                <button class="btn btn-primary" onclick="app.saveCustomPreset()">💾 Save Preset</button>
+            <div class="grid grid-cols-2 gap-1.5">
+                <button class="btn btn-primary" onclick="app.randomize()">Randomize</button>
+                <button class="btn btn-primary" onclick="app.saveCustomPreset()">Save Preset</button>
             </div>
         </div>
         
         <!-- Custom Presets -->
-        <div class="mb-6" id="customPresetsSection" style="display: none;">
-            <div class="label mb-3">Your Custom Presets</div>
-            <div id="customPresetsList" class="grid grid-cols-1 gap-2 mb-2"></div>
+        <div class="px-5 py-4 section" id="customPresetsSection" style="display: none;">
+            <div class="section-label mb-3">Your Custom Presets</div>
+            <div id="customPresetsList" class="grid grid-cols-1 gap-1.5 mb-2"></div>
             <input type="file" id="presetImport" accept=".json" style="display: none;" onchange="app.importPreset(event)">
-            <button class="btn w-full" onclick="document.getElementById('presetImport').click()">📥 Import Preset</button>
+            <button class="btn w-full" onclick="document.getElementById('presetImport').click()">Import Preset</button>
         </div>
         
-        <!-- ===== COLOR PALETTE ===== -->
-        <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Color Palette</div>
+        <!-- Color Palette -->
+        <div class="px-5 py-4 section">
+            <div class="section-label mb-3">Color Palette</div>
             <div id="colorPalette" class="flex flex-wrap gap-2 mb-3"></div>
-            <div class="flex gap-2 mb-2">
-                <button class="btn flex-1" onclick="app.addColor()">+ Add Color</button>
+            <div class="flex gap-1.5 mb-3">
+                <button class="btn flex-1" onclick="app.addColor()">+ Add</button>
                 <button class="btn flex-1" onclick="app.shufflePalette()">Shuffle</button>
             </div>
-            <div class="label mb-2">Highlight Accent</div>
-            <div class="flex gap-2">
+            <div class="section-label mb-2" style="font-size: 10px;">Highlight Accent</div>
+            <div class="flex gap-1.5">
                 <button id="toggleYellow" class="btn flex-1" style="border-color: #EFFF00; color: #EFFF00;" 
                         onclick="app.toggleHighlight('#EFFF00')">Yellow</button>
                 <button id="toggleOrange" class="btn flex-1" style="border-color: #FF5E00; color: #FF5E00;" 
@@ -170,185 +268,167 @@
             </div>
         </div>
         
-        <!-- ===== FLOW FIELD ===== -->
-        <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Flow Field</div>
+        <!-- Flow Field -->
+        <div class="px-5 py-4 section">
+            <div class="section-label mb-4">Flow Field</div>
             
             <div class="mb-4">
-                <label class="label">Frequency <span class="text-gray-500">(iteration frequency)</span></label>
+                <div class="param-label">Frequency <span class="hint">iteration frequency</span></div>
                 <input type="range" class="slider" min="0.1" max="2" step="0.05" value="0.5" 
                        oninput="app.updateUniform('curveFrequency', parseFloat(this.value))">
             </div>
-            
             <div class="mb-4">
-                <label class="label">Amplitude <span class="text-gray-500">(iteration strength)</span></label>
+                <div class="param-label">Amplitude <span class="hint">iteration strength</span></div>
                 <input type="range" class="slider" min="0" max="3" step="0.05" value="1.2" 
                        oninput="app.updateUniform('curveAmplitude', parseFloat(this.value))">
             </div>
-            
             <div class="mb-4">
-                <label class="label">Complexity <span class="text-gray-500">(iteration depth)</span></label>
+                <div class="param-label">Complexity <span class="hint">iteration depth</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.05" value="0.5" 
                        oninput="app.updateUniform('curveComplexity', parseFloat(this.value))">
             </div>
-            
             <div class="mb-4">
-                <label class="label">Scale <span class="text-gray-500">(zoom level)</span></label>
+                <div class="param-label">Scale <span class="hint">zoom level</span></div>
                 <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.0" 
                        oninput="app.updateUniform('warpScale', parseFloat(this.value))">
             </div>
-            
-            <div class="mb-4">
-                <label class="label">Flow Speed <span class="text-gray-500">(evolution rate)</span></label>
+            <div>
+                <div class="param-label">Flow Speed <span class="hint">evolution rate</span></div>
                 <input type="range" class="slider" min="0" max="2" step="0.05" value="0.5" 
                        oninput="app.updateUniform('emitterSpeed', parseFloat(this.value))">
             </div>
         </div>
         
-        <!-- ===== BANDS & HIGHLIGHTS ===== -->
-        <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Bands & Highlights</div>
+        <!-- Bands & Highlights -->
+        <div class="px-5 py-4 section">
+            <div class="section-label mb-4">Bands & Highlights</div>
             
             <div class="mb-4">
-                <label class="label">Band Intensity <span class="text-gray-500">(brightness of bands)</span></label>
+                <div class="param-label">Band Intensity <span class="hint">brightness</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.01" value="0.3" 
                        oninput="app.updateUniform('highlightIntensity', parseFloat(this.value))">
             </div>
-            
             <div class="mb-4">
-                <label class="label">Band Width <span class="text-gray-500">(thickness)</span></label>
+                <div class="param-label">Band Width <span class="hint">thickness</span></div>
                 <input type="range" class="slider" min="0.1" max="2" step="0.05" value="0.8" 
                        oninput="app.updateUniform('highlightWidth', parseFloat(this.value))">
             </div>
-            
-            <div class="mb-4">
-                <label class="label">Band Frequency <span class="text-gray-500">(spacing)</span></label>
+            <div>
+                <div class="param-label">Band Frequency <span class="hint">spacing</span></div>
                 <input type="range" class="slider" min="0.1" max="2" step="0.05" value="0.5" 
                        oninput="app.updateUniform('highlightFrequency', parseFloat(this.value))">
             </div>
         </div>
         
-        <!-- ===== LAYER MIXING ===== -->
-        <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Layer Mixing</div>
+        <!-- Layer Mixing -->
+        <div class="px-5 py-4 section">
+            <div class="section-label mb-4">Layer Mixing</div>
             
             <div class="mb-4">
-                <label class="label">Horizontal Flow <span class="text-gray-500">(X-axis pattern)</span></label>
+                <div class="param-label">Horizontal Flow <span class="hint">X-axis</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.05" value="0.6" 
                        oninput="app.updateUniform('lightLayer1', parseFloat(this.value))">
             </div>
-            
             <div class="mb-4">
-                <label class="label">Vertical Flow <span class="text-gray-500">(Y-axis pattern)</span></label>
+                <div class="param-label">Vertical Flow <span class="hint">Y-axis</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.05" value="0.55" 
                        oninput="app.updateUniform('lightLayer2', parseFloat(this.value))">
             </div>
-            
             <div class="mb-4">
-                <label class="label">Cross Flow <span class="text-gray-500">(combined pattern)</span></label>
+                <div class="param-label">Cross Flow <span class="hint">combined</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.05" value="0.5" 
                        oninput="app.updateUniform('lightLayer3', parseFloat(this.value))">
             </div>
-            
             <div class="mb-4">
-                <label class="label">Band Layer <span class="text-gray-500">(highlight bands)</span></label>
+                <div class="param-label">Band Layer <span class="hint">highlights</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.05" value="0.55" 
                        oninput="app.updateUniform('lightLayer4', parseFloat(this.value))">
             </div>
-            
-            <div class="mb-4">
-                <label class="label">Ambient Fill <span class="text-gray-500">(base brightness)</span></label>
+            <div>
+                <div class="param-label">Ambient Fill <span class="hint">base brightness</span></div>
                 <input type="range" class="slider" min="0" max="0.2" step="0.005" value="0.02" 
                        oninput="app.updateUniform('ambientLight', parseFloat(this.value))">
             </div>
         </div>
         
-        <!-- ===== TONE & SHAPING ===== -->
-        <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Tone & Shaping</div>
+        <!-- Tone & Shaping -->
+        <div class="px-5 py-4 section">
+            <div class="section-label mb-4">Tone & Shaping</div>
             
             <div class="mb-4">
-                <label class="label">Hardness <span class="text-gray-500">(edge sharpness)</span></label>
+                <div class="param-label">Hardness <span class="hint">edge sharpness</span></div>
                 <input type="range" class="slider" min="0" max="1" step="0.01" value="0.15" 
                        oninput="app.updateUniform('hardness', parseFloat(this.value))">
             </div>
-            
             <div class="mb-4">
-                <label class="label">Diffusion <span class="text-gray-500">(softness range)</span></label>
+                <div class="param-label">Diffusion <span class="hint">softness range</span></div>
                 <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.4" 
                        oninput="app.updateUniform('diffusion', parseFloat(this.value))">
             </div>
-            
             <div class="mb-4">
-                <label class="label">Brightness <span class="text-gray-500">(output level)</span></label>
+                <div class="param-label">Brightness <span class="hint">output level</span></div>
                 <input type="range" class="slider" min="0" max="2" step="0.01" value="1.0" 
                        oninput="app.updateUniform('hotspotGlow', parseFloat(this.value))">
             </div>
-            
-            <div class="mb-4">
-                <label class="label">Contrast <span class="text-gray-500">(output curve)</span></label>
+            <div>
+                <div class="param-label">Contrast <span class="hint">output curve</span></div>
                 <input type="range" class="slider" min="0.5" max="2" step="0.05" value="1.0" 
                        oninput="app.updateUniform('contrastCurve', parseFloat(this.value))">
             </div>
         </div>
         
-        
-        <!-- ===== POST-PROCESSING ===== -->
-        <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Post-Processing</div>
+        <!-- Post-Processing -->
+        <div class="px-5 py-4 section">
+            <div class="section-label mb-4">Post-Processing</div>
             
             <div class="mb-4">
-                <label class="label">Film Grain <span class="text-gray-500">(intensity)</span></label>
+                <div class="param-label">Film Grain <span class="hint">intensity</span></div>
                 <input type="range" class="slider" min="0" max="0.1" step="0.001" value="0" 
                        oninput="app.updateUniform('grainIntensity', parseFloat(this.value))">
             </div>
-            
             <div class="mb-4">
-                <label class="label">Grain Size <span class="text-gray-500">(coarseness)</span></label>
+                <div class="param-label">Grain Size <span class="hint">coarseness</span></div>
                 <input type="range" class="slider" min="0.1" max="3" step="0.05" value="1.0" 
                        oninput="app.updateUniform('grainSize', parseFloat(this.value))">
             </div>
-            
-            <div class="mb-4">
-                <label class="label">Chromatic Aberration <span class="text-gray-500">(RGB split)</span></label>
+            <div>
+                <div class="param-label">Chromatic Aberration <span class="hint">RGB split</span></div>
                 <input type="range" class="slider" min="0" max="0.02" step="0.0005" value="0.003" 
                        oninput="app.updateUniform('chromaticAberration', parseFloat(this.value))">
             </div>
         </div>
         
-        <!-- ===== ANIMATION ===== -->
-        <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Animation</div>
-            
-            <div class="mb-4">
-                <label class="label">Time Speed <span class="text-gray-500">(global animation rate)</span></label>
+        <!-- Animation -->
+        <div class="px-5 py-4 section">
+            <div class="section-label mb-4">Animation</div>
+            <div>
+                <div class="param-label">Time Speed <span class="hint">global rate</span></div>
                 <input type="range" class="slider" min="0" max="2" step="0.01" value="0.3" 
                        oninput="app.updateUniform('animSpeed', parseFloat(this.value))">
             </div>
         </div>
         
-        <!-- ===== EXPORT ===== -->
-        <div class="mb-6">
-            <div class="label mb-3" style="color: #903DD9;">Export</div>
-            <button class="btn btn-primary w-full mb-3" onclick="app.export4K()">📷 Export 4K PNG</button>
+        <!-- Export -->
+        <div class="px-5 py-4">
+            <div class="section-label mb-3">Export</div>
+            <button class="btn btn-primary w-full mb-3" onclick="app.export4K()">Export 4K PNG</button>
             
             <div class="flex gap-2 mb-2">
                 <div class="flex-1">
-                    <label class="label">Duration (sec)</label>
-                    <input type="number" id="videoDuration" value="5" min="1" max="60" 
-                           class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-sm">
+                    <div class="param-label">Duration (sec)</div>
+                    <input type="number" id="videoDuration" value="5" min="1" max="60" class="input-field">
                 </div>
                 <div class="flex-1">
-                    <label class="label">Resolution</label>
-                    <select id="videoResolution" class="w-full bg-white/10 border border-white/10 rounded px-2 py-1 text-white text-sm">
+                    <div class="param-label">Resolution</div>
+                    <select id="videoResolution" class="input-field">
                         <option value="1080">1080p</option>
                         <option value="1440">1440p</option>
                         <option value="2160">4K</option>
                     </select>
                 </div>
             </div>
-            <button id="recordBtn" class="btn btn-primary w-full" onclick="app.toggleRecording()">🎬 Record Video</button>
-            <p id="recordStatus" class="text-xs text-gray-400 mt-2 text-center" style="display: none;"></p>
+            <button id="recordBtn" class="btn btn-primary w-full" onclick="app.toggleRecording()">Record Video</button>
+            <p id="recordStatus" style="font-size: 11px; color: var(--text-soft); margin-top: 8px; text-align: center; display: none;"></p>
         </div>
     </div>
 

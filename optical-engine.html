@@ -1301,16 +1301,23 @@
                 this.canvas.height = res.h;
                 this.gl.viewport(0, 0, res.w, res.h);
                 
-                // Get canvas stream
-                const stream = this.canvas.captureStream(60); // 60 FPS
+                // Get canvas stream at 60 FPS
+                const stream = this.canvas.captureStream(60);
                 
-                // Setup MediaRecorder
-                const options = { mimeType: 'video/webm;codecs=vp9', videoBitsPerSecond: 20000000 };
+                // Try MP4 (H.264) first, fall back to WebM
+                const codecs = [
+                    'video/mp4;codecs=avc1.42E01E',
+                    'video/mp4;codecs=avc1',
+                    'video/mp4',
+                    'video/webm;codecs=vp9',
+                    'video/webm;codecs=vp8',
+                    'video/webm'
+                ];
                 
-                // Fallback if VP9 not supported
-                if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                    options.mimeType = 'video/webm';
-                }
+                let mimeType = codecs.find(c => MediaRecorder.isTypeSupported(c)) || 'video/webm';
+                this.recordingMimeType = mimeType;
+                
+                const options = { mimeType, videoBitsPerSecond: 40000000 }; // 40 Mbps for quality at 60fps
                 
                 this.mediaRecorder = new MediaRecorder(stream, options);
                 this.recordedChunks = [];
@@ -1371,17 +1378,21 @@
             },
             
             exportVideo() {
-                const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+                const isMP4 = this.recordingMimeType && this.recordingMimeType.startsWith('video/mp4');
+                const ext = isMP4 ? 'mp4' : 'webm';
+                const type = isMP4 ? 'video/mp4' : 'video/webm';
+                
+                const blob = new Blob(this.recordedChunks, { type });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `moonpay-optical-${Date.now()}.webm`;
+                a.download = `moonpay-optical-${Date.now()}.${ext}`;
                 a.click();
                 URL.revokeObjectURL(url);
                 
                 // Update status
                 const status = document.getElementById('recordStatus');
-                status.textContent = 'Video exported! (WebM format)';
+                status.textContent = `Video exported! (${ext.toUpperCase()} · 60fps)`;
                 setTimeout(() => {
                     status.style.display = 'none';
                 }, 3000);

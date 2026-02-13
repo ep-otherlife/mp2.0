@@ -243,10 +243,21 @@
             </div>
         </div>
         
+        <!-- Save Preset Inline Form -->
+        <div class="px-5 py-4 section" id="savePresetForm" style="display: none;">
+            <div class="section-label mb-3">Save Preset</div>
+            <div class="flex gap-1.5">
+                <input type="text" id="presetNameInput" placeholder="Preset name..." class="input-field flex-1" 
+                       onkeydown="if(event.key==='Enter') app.confirmSavePreset()">
+                <button class="btn btn-primary" onclick="app.confirmSavePreset()" style="white-space: nowrap;">Save</button>
+                <button class="btn" onclick="app.cancelSavePreset()">Cancel</button>
+            </div>
+        </div>
+        
         <!-- Custom Presets -->
         <div class="px-5 py-4 section" id="customPresetsSection" style="display: none;">
-            <div class="section-label mb-3">Your Custom Presets</div>
-            <div id="customPresetsList" class="grid grid-cols-1 gap-1.5 mb-2"></div>
+            <div class="section-label mb-3">Saved Presets</div>
+            <div id="customPresetsList" class="grid grid-cols-1 gap-1.5 mb-3"></div>
             <input type="file" id="presetImport" accept=".json" style="display: none;" onchange="app.importPreset(event)">
             <button class="btn w-full" onclick="document.getElementById('presetImport').click()">Import Preset</button>
         </div>
@@ -1478,59 +1489,65 @@
                 }, 3000);
             },
             
+            // Build a settings snapshot from current state
+            captureSettings() {
+                return {
+                    colors: [...this.state.colors],
+                    curveFrequency: this.state.curveFrequency,
+                    curveAmplitude: this.state.curveAmplitude,
+                    curveComplexity: this.state.curveComplexity,
+                    warpScale: this.state.warpScale,
+                    highlightIntensity: this.state.highlightIntensity,
+                    highlightWidth: this.state.highlightWidth,
+                    highlightFrequency: this.state.highlightFrequency,
+                    hardness: this.state.hardness,
+                    diffusion: this.state.diffusion,
+                    hotspotGlow: this.state.hotspotGlow,
+                    emitterSpeed: this.state.emitterSpeed,
+                    ambientLight: this.state.ambientLight,
+                    lightLayer1: this.state.lightLayer1,
+                    lightLayer2: this.state.lightLayer2,
+                    lightLayer3: this.state.lightLayer3,
+                    lightLayer4: this.state.lightLayer4,
+                    grainIntensity: this.state.grainIntensity,
+                    grainSize: this.state.grainSize,
+                    chromaticAberration: this.state.chromaticAberration,
+                    contrastCurve: this.state.contrastCurve,
+                    animSpeed: this.state.animSpeed
+                };
+            },
+            
+            // Show the inline save form
             saveCustomPreset() {
-                const name = prompt('Enter a name for this preset:');
-                if (!name) return;
+                const form = document.getElementById('savePresetForm');
+                const input = document.getElementById('presetNameInput');
+                form.style.display = 'block';
+                input.value = '';
+                input.focus();
+            },
+            
+            // Confirm save from inline form
+            confirmSavePreset() {
+                const input = document.getElementById('presetNameInput');
+                const name = input.value.trim();
+                if (!name) { input.focus(); return; }
                 
-                // Get current state - all parameters
                 const preset = {
-                    name: name,
-                    settings: {
-                        colors: [...this.state.colors],
-                        // Curve Shape
-                        curveFrequency: this.state.curveFrequency,
-                        curveAmplitude: this.state.curveAmplitude,
-                        curveComplexity: this.state.curveComplexity,
-                        warpScale: this.state.warpScale,
-                        // Flow Highlights
-                        highlightIntensity: this.state.highlightIntensity,
-                        highlightWidth: this.state.highlightWidth,
-                        highlightFrequency: this.state.highlightFrequency,
-                        // Tone & Shaping
-                        hardness: this.state.hardness,
-                        diffusion: this.state.diffusion,
-                        hotspotGlow: this.state.hotspotGlow,
-                        emitterSpeed: this.state.emitterSpeed,
-                        // Layer Mixing
-                        ambientLight: this.state.ambientLight,
-                        lightLayer1: this.state.lightLayer1,
-                        lightLayer2: this.state.lightLayer2,
-                        lightLayer3: this.state.lightLayer3,
-                        lightLayer4: this.state.lightLayer4,
-                        // Post-processing
-                        grainIntensity: this.state.grainIntensity,
-                        grainSize: this.state.grainSize,
-                        chromaticAberration: this.state.chromaticAberration,
-                        contrastCurve: this.state.contrastCurve,
-                        // Animation
-                        animSpeed: this.state.animSpeed
-                    },
+                    name,
+                    settings: this.captureSettings(),
                     timestamp: Date.now()
                 };
                 
-                // Load existing presets
                 let customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
-                
-                // Add new preset
                 customPresets.push(preset);
-                
-                // Save to localStorage
                 localStorage.setItem('opticalEnginePresets', JSON.stringify(customPresets));
                 
-                // Update UI
+                document.getElementById('savePresetForm').style.display = 'none';
                 this.loadCustomPresets();
-                
-                alert(`Preset "${name}" saved!`);
+            },
+            
+            cancelSavePreset() {
+                document.getElementById('savePresetForm').style.display = 'none';
             },
             
             loadCustomPresets() {
@@ -1547,31 +1564,38 @@
                 list.innerHTML = '';
                 
                 customPresets.forEach((preset, index) => {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'flex gap-2';
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display:flex; align-items:center; gap:6px; padding:5px 0;';
                     
-                    const loadBtn = document.createElement('button');
-                    loadBtn.className = 'btn flex-1';
-                    loadBtn.textContent = preset.name;
-                    loadBtn.onclick = () => this.applyCustomPreset(index);
+                    // Name — click to load, double-click to rename
+                    const nameEl = document.createElement('button');
+                    nameEl.className = 'btn flex-1';
+                    nameEl.textContent = preset.name;
+                    nameEl.title = 'Click to load, double-click to rename';
+                    nameEl.style.textAlign = 'left';
+                    nameEl.onclick = () => this.applyCustomPreset(index);
+                    nameEl.ondblclick = (e) => { e.stopPropagation(); this.renamePreset(index); };
                     
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.className = 'btn';
-                    deleteBtn.textContent = '🗑️';
-                    deleteBtn.style.padding = '8px 12px';
-                    deleteBtn.onclick = () => this.deleteCustomPreset(index);
-                    
+                    // Export button
                     const exportBtn = document.createElement('button');
                     exportBtn.className = 'btn';
-                    exportBtn.textContent = '📤';
-                    exportBtn.style.padding = '8px 12px';
-                    exportBtn.title = 'Export preset';
+                    exportBtn.innerHTML = '&#8599;'; // arrow
+                    exportBtn.style.cssText = 'padding:6px 9px; font-size:13px; flex-shrink:0;';
+                    exportBtn.title = 'Export as JSON';
                     exportBtn.onclick = () => this.exportPreset(index);
                     
-                    wrapper.appendChild(loadBtn);
-                    wrapper.appendChild(exportBtn);
-                    wrapper.appendChild(deleteBtn);
-                    list.appendChild(wrapper);
+                    // Delete button
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn';
+                    deleteBtn.innerHTML = '&times;';
+                    deleteBtn.style.cssText = 'padding:6px 9px; font-size:14px; flex-shrink:0; color:var(--text-soft);';
+                    deleteBtn.title = 'Delete preset';
+                    deleteBtn.onclick = () => this.deleteCustomPreset(index);
+                    
+                    row.appendChild(nameEl);
+                    row.appendChild(exportBtn);
+                    row.appendChild(deleteBtn);
+                    list.appendChild(row);
                 });
             },
             
@@ -1579,16 +1603,57 @@
                 const customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
                 if (!customPresets[index]) return;
                 
-                const preset = customPresets[index].settings;
-                Object.assign(this.state, preset);
+                Object.assign(this.state, customPresets[index].settings);
                 this.renderColorPalette();
                 this.updateSliders();
+                
+                // Brief highlight on the loaded button
+                const btns = document.querySelectorAll('#customPresetsList .btn');
+                const btn = btns[index * 3]; // name button is every 3rd
+                if (btn) {
+                    btn.style.borderColor = 'var(--primary-base)';
+                    setTimeout(() => { btn.style.borderColor = ''; }, 600);
+                }
+            },
+            
+            renamePreset(index) {
+                const customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
+                if (!customPresets[index]) return;
+                
+                // Replace the name button with an inline input
+                const list = document.getElementById('customPresetsList');
+                const row = list.children[index];
+                if (!row) return;
+                
+                const nameBtn = row.firstChild;
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = customPresets[index].name;
+                input.className = 'input-field flex-1';
+                input.style.cssText = 'padding:5px 8px; font-size:12px;';
+                
+                const save = () => {
+                    const newName = input.value.trim();
+                    if (newName) {
+                        customPresets[index].name = newName;
+                        localStorage.setItem('opticalEnginePresets', JSON.stringify(customPresets));
+                    }
+                    this.loadCustomPresets();
+                };
+                
+                input.onkeydown = (e) => { if (e.key === 'Enter') save(); if (e.key === 'Escape') this.loadCustomPresets(); };
+                input.onblur = save;
+                
+                row.replaceChild(input, nameBtn);
+                input.focus();
+                input.select();
             },
             
             deleteCustomPreset(index) {
-                if (!confirm('Delete this preset?')) return;
-                
                 let customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
+                const name = customPresets[index]?.name || 'this preset';
+                if (!confirm(`Delete "${name}"?`)) return;
+                
                 customPresets.splice(index, 1);
                 localStorage.setItem('opticalEnginePresets', JSON.stringify(customPresets));
                 this.loadCustomPresets();
@@ -1618,36 +1683,28 @@
                     try {
                         const preset = JSON.parse(e.target.result);
                         
-                        // Validate preset structure
                         if (!preset.name || !preset.settings) {
                             alert('Invalid preset file');
                             return;
                         }
                         
-                        // Load existing presets
                         let customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
                         
-                        // Check for duplicate names
                         const existingIndex = customPresets.findIndex(p => p.name === preset.name);
                         if (existingIndex !== -1) {
-                            if (!confirm(`Preset "${preset.name}" already exists. Replace it?`)) return;
+                            if (!confirm(`"${preset.name}" already exists. Replace it?`)) return;
                             customPresets[existingIndex] = preset;
                         } else {
                             customPresets.push(preset);
                         }
                         
-                        // Save and reload
                         localStorage.setItem('opticalEnginePresets', JSON.stringify(customPresets));
                         this.loadCustomPresets();
-                        
-                        alert(`Preset "${preset.name}" imported successfully!`);
                     } catch (error) {
                         alert('Error importing preset: ' + error.message);
                     }
                 };
                 reader.readAsText(file);
-                
-                // Reset file input
                 event.target.value = '';
             }
         };

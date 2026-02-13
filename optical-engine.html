@@ -237,29 +237,33 @@
                 <button class="btn" onclick="app.applyPreset('dramaticSweep')">Dramatic Sweep</button>
                 <button class="btn" onclick="app.applyPreset('ambientWash')">Ambient Wash</button>
             </div>
-            <div class="grid grid-cols-2 gap-1.5">
-                <button class="btn btn-primary" onclick="app.randomize()">Randomize</button>
-                <button class="btn btn-primary" onclick="app.saveCustomPreset()">Save Preset</button>
+            <div>
+                <button class="btn btn-primary w-full" onclick="app.randomize()">Randomize</button>
             </div>
         </div>
         
-        <!-- Save Preset Inline Form -->
-        <div class="px-5 py-4 section" id="savePresetForm" style="display: none;">
-            <div class="section-label mb-3">Save Preset</div>
-            <div class="flex gap-1.5">
-                <input type="text" id="presetNameInput" placeholder="Preset name..." class="input-field flex-1" 
-                       onkeydown="if(event.key==='Enter') app.confirmSavePreset()">
-                <button class="btn btn-primary" onclick="app.confirmSavePreset()" style="white-space: nowrap;">Save</button>
-                <button class="btn" onclick="app.cancelSavePreset()">Cancel</button>
-            </div>
-        </div>
-        
-        <!-- Custom Presets -->
-        <div class="px-5 py-4 section" id="customPresetsSection" style="display: none;">
+        <!-- Saved Presets (always visible) -->
+        <div class="px-5 py-4 section" id="customPresetsSection">
             <div class="section-label mb-3">Saved Presets</div>
-            <div id="customPresetsList" class="grid grid-cols-1 gap-1.5 mb-3"></div>
-            <input type="file" id="presetImport" accept=".json" style="display: none;" onchange="app.importPreset(event)">
-            <button class="btn w-full" onclick="document.getElementById('presetImport').click()">Import Preset</button>
+            <div id="customPresetsList" class="grid grid-cols-1 gap-0 mb-3"></div>
+            
+            <!-- Inline save form (toggled) -->
+            <div id="savePresetForm" style="display: none; margin-bottom: 10px;">
+                <div class="flex gap-1.5">
+                    <input type="text" id="presetNameInput" placeholder="Preset name..." class="input-field flex-1" 
+                           onkeydown="if(event.key==='Enter') app.confirmSavePreset(); if(event.key==='Escape') app.cancelSavePreset();">
+                    <button class="btn btn-primary" onclick="app.confirmSavePreset()" style="white-space: nowrap;">Save</button>
+                    <button class="btn" onclick="app.cancelSavePreset()">&times;</button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-1.5">
+                <button class="btn btn-primary w-full" onclick="app.saveCustomPreset()">+ Save Current</button>
+                <div class="flex gap-1.5">
+                    <input type="file" id="presetImport" accept=".json" style="display: none;" onchange="app.importPreset(event)">
+                    <button class="btn w-full" onclick="document.getElementById('presetImport').click()">Import</button>
+                </div>
+            </div>
         </div>
         
         <!-- Color Palette -->
@@ -1552,16 +1556,10 @@
             
             loadCustomPresets() {
                 const customPresets = JSON.parse(localStorage.getItem('opticalEnginePresets') || '[]');
-                const section = document.getElementById('customPresetsSection');
                 const list = document.getElementById('customPresetsList');
-                
-                if (customPresets.length === 0) {
-                    section.style.display = 'none';
-                    return;
-                }
-                
-                section.style.display = 'block';
                 list.innerHTML = '';
+                
+                if (customPresets.length === 0) return;
                 
                 customPresets.forEach((preset, index) => {
                     const row = document.createElement('div');

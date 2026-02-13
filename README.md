@@ -1,146 +1,91 @@
 # MoonPay Optical Engine
 
-A professional-grade procedural gradient generator designed to produce high-fidelity, brand-aligned motion gradients and optical auras for the MoonPay product ecosystem.
+A procedural light and gradient generator built for the MoonPay brand system. Single-file, browser-based, no build step required.
 
-## Features
+**Live:** [mp2-0.vercel.app](https://mp2-0.vercel.app)
 
-### 🎨 Visual Generation
-- **Iterative Domain Distortion** - Smooth, flowing organic curves using advanced warping algorithms
-- **Four Dynamic Light Emitters** - Layered, translucent blending for atmospheric depth
-- **Spatial Focus System** - Dramatic contrast between sharp "in-focus" and soft "out-of-focus" areas
-- **Real-time Mouse Interaction** - Control the 4th emitter with your cursor
+---
 
-### 🎭 Visual Presets
-- **Soft Aurora** - Ethereal & dreamy with minimal warp and soft diffusion
-- **Flowing Glass** - Balanced & iridescent with smooth translucent flow
-- **Liquid Optics** - Dynamic & layered with high contrast and dramatic flow
-- **Ambient Depth** - Atmospheric & volumetric with extreme depth of field
+## Getting Started
 
-### 🌈 MoonPay Brand Themes
-- **Consumer (Core)** - Purple gradient (#903DD9 → #FFFFFF)
-- **Partner (Business)** - Blue gradient (#4464D9 → #FFFFFF)
-- **Stablecoins** - Green-cyan gradient (#089C50 → #AEE6E8)
+1. Clone the repo:
+   ```
+   git clone https://github.com/ep-otherlife/mp2.0.git
+   ```
+2. Open `optical-engine.html` in any modern browser — or open the folder in Cursor to edit.
+3. That's it. No dependencies, no install, no build.
 
-### 🎛️ Advanced Controls
-- **Dynamic Color Palette** - Support for 2-10 colors with live editing
-- **Emitter Properties** - Hardness, Diffusion, Hotspot Glow
-- **Spatial Focus** - Intensity and Contrast controls
-- **Domain Warping** - Strength and Scale adjustments
-- **Film Grain** - Gaussian noise with adjustable intensity and size
-- **Chromatic Aberration** - Radial RGB channel separation for optical effects
+---
 
-### 💾 Preset Management
-- **Save Custom Presets** - Store your favorite configurations
-- **Export/Import** - Share presets with your team as JSON files
-- **LocalStorage** - Presets persist across sessions
+## How It Works
 
-### 📤 Export
-- **4K PNG Export** - High-resolution output (3840x2160)
-- **Accurate Color Rendering** - Precise hex code matching
-- **ACES Tonemapping** - Professional color grading
+Everything lives in a single HTML file using WebGL 1.0 fragment shaders and Tailwind CSS. The generator produces flowing, organic light forms driven by an iterative feedback loop, mapped onto a dynamic color palette.
 
-## Technical Stack
+### Parameters
 
-- **Frontend**: Single-file HTML5/JavaScript application
-- **UI Framework**: Tailwind CSS (CDN)
-- **Graphics API**: WebGL 1.0 with GLSL Fragment Shaders
-- **Procedural Logic**: 
-  - Iterative domain distortion
-  - Fractional Brownian Motion (FBM)
-  - Box-Muller transform for Gaussian noise
-  - ACES tonemapping
+- **Flow Field** — Shapes the structure and movement of curves.
+- **Bands & Highlights** — Controls bright linear streaks.
+- **Layer Mixing** — Balances directional flows and ambient light.
+- **Tone & Shaping** — Adjusts edge sharpness, diffusion, brightness, and contrast.
+- **Post-Processing & Motion** — Adds film grain, chromatic aberration, and animation speed.
 
-## Usage
+### Color System
 
-### Local Development
-Simply open `optical-engine.html` in a modern web browser. No build process required!
+- **Brand Themes** — One-click palette swap for Consumer, Partner, and Stablecoins.
+- **Custom Palette** — Add, remove, reorder (drag & drop), and edit individual color stops.
+- **Highlight Accents** — Toggle yellow or orange accent colors into the gradient.
 
-### Deployment Options
+### Presets
 
-#### Option 1: GitHub Pages
-Already set up! Your tool will be available at:
-```
-https://ep-otherlife.github.io/mp2.0/optical-engine.html
-```
+- Six built-in presets + a Randomize button for exploration.
+- Save unlimited custom presets (persisted in localStorage).
+- Export/import presets as JSON to share with the team.
 
-#### Option 2: Any Static Host
-Deploy the single HTML file to:
-- Netlify
-- Vercel
-- AWS S3
-- Any web server
+### Export
 
-### Controls
+- **4K PNG** — Single-frame render at 3840×2160.
+- **Video** — MP4 (or WebM fallback) at 60fps with configurable duration.
 
-1. **Brand Themes** - One-click color palette switching
-2. **Visual Presets** - Pre-configured aesthetic styles
-3. **Color Palette** - Click swatches to edit, add/remove colors, shuffle order
-4. **Emitter Properties** - Adjust light behavior and diffusion
-5. **Spatial Focus** - Control depth of field effects
-6. **Domain Warping** - Modify organic flow patterns
-7. **Post-Processing** - Fine-tune grain and chromatic aberration
-8. **Animation Speed** - Control motion speed
-9. **Save/Export** - Store presets and export high-res images
+---
 
-### Keyboard Shortcuts
-- Mouse movement controls the 4th light emitter in real-time
+## Making Changes
 
-## Creating Custom Presets
-
-1. Adjust all parameters to your desired look
-2. Click **"💾 Save Current Settings"**
-3. Enter a name for your preset
-4. Your preset appears in "Your Custom Presets" section
-
-### Sharing Presets with Team
-
-1. Click **📤** next to your saved preset
-2. Download the `.json` file
-3. Share via Slack, email, or file system
-4. Team members click **"📥 Import Preset"** to load it
-
-## Technical Details
-
-### WebGL 1.0 Compatibility
-- No dynamic array indexing (manually unrolled loops)
-- All color ramp calculations use constant indices
-- Maximum compatibility across devices
-
-### Color Accuracy
-- Simplified ACES tonemapping preserves hex code accuracy
-- Reduced additive elements prevent oversaturation
-- Gentle S-curve for contrast without color shift
-
-### Noise Implementation
-- True Gaussian distribution via Box-Muller transform
-- High-quality hash function prevents artifacts
-- Adjustable grain size and intensity
-
-## Browser Compatibility
-
-- Chrome/Edge (Recommended)
-- Firefox
-- Safari
-- Any browser with WebGL 1.0 support
-
-## Performance
-
-- Target: 60fps on standard laptop GPUs
-- Optimized shader compilation
-- Real-time parameter updates without recompilation
-- Efficient 4K rendering for export
-
-## Project Structure
+Edit `optical-engine.html` in Cursor, preview in your browser, then push:
 
 ```
-optical-engine.html    # Complete application (self-contained)
-README.md             # This file
+git add optical-engine.html
+git commit -m "description of change"
+git push origin main
 ```
 
-## Credits
+Vercel auto-deploys from `main`, so changes go live immediately.
 
-Built for MoonPay to generate brand-aligned optical assets for the product ecosystem.
+### Branching (recommended for larger edits)
+
+```
+git checkout -b your-name/feature
+# make changes
+git push -u origin your-name/feature
+```
+
+Then open a PR on GitHub to merge into `main`.
+
+---
+
+## Tech Stack
+
+- HTML5 / JavaScript (single file, no framework)
+- WebGL 1.0 + GLSL ES 1.0 fragment shaders
+- Tailwind CSS via CDN
+- Iterative domain distortion, FBM noise, Box-Muller Gaussian grain
+- MediaRecorder API for video capture
+
+---
+
+## Browser Support
+
+Chrome, Edge, Firefox, Safari — any browser with WebGL 1.0.
 
 ## License
 
-Proprietary - MoonPay Internal Tool
+Proprietary — MoonPay internal tool.
